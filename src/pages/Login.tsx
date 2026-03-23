@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { motion } from 'motion/react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, LogIn } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -55,7 +55,15 @@ export default function Login() {
       >
         <Card className="bg-zinc-900/80 backdrop-blur-xl border-white/10">
           <CardHeader>
-            <CardTitle className="text-xl text-center">Welcome Back</CardTitle>
+            <div className="flex justify-center mt-2 mb-4">
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                width={100} 
+                height={60} 
+                className="h-12 w-auto object-contain brightness-0 invert opacity-80" 
+              />
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
