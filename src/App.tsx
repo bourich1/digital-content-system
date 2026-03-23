@@ -8,14 +8,18 @@ import Creators from '@/pages/Creators';
 import ContentIdeas from '@/pages/ContentIdeas';
 import Analytics from '@/pages/Analytics';
 import Settings from '@/pages/Settings';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 // Protected Route Wrapper
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children, session }: { children: React.ReactNode, session: Session | null }) => {
   const isConfigured = isSupabaseConfigured();
   
-  // If not configured, redirect to login
   if (!isConfigured) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!session) {
     return <Navigate to="/login" replace />;
   }
 
@@ -23,38 +27,62 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function App() {
+  const [session, setSession] = React.useState<Session | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
+  }
+
   return (
     <Router>
       <Toaster position="top-right" theme="dark" />
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={
+          session ? <Navigate to="/" replace /> : <Login />
+        } />
         
         <Route path="/" element={
-          <ProtectedRoute>
+          <ProtectedRoute session={session}>
             <Dashboard />
           </ProtectedRoute>
         } />
         
         <Route path="/creators" element={
-          <ProtectedRoute>
+          <ProtectedRoute session={session}>
             <Creators />
           </ProtectedRoute>
         } />
         
         <Route path="/ideas" element={
-          <ProtectedRoute>
+          <ProtectedRoute session={session}>
             <ContentIdeas />
           </ProtectedRoute>
         } />
         
         <Route path="/analytics" element={
-          <ProtectedRoute>
+          <ProtectedRoute session={session}>
             <Analytics />
           </ProtectedRoute>
         } />
         
         <Route path="/settings" element={
-          <ProtectedRoute>
+          <ProtectedRoute session={session}>
             <Settings />
           </ProtectedRoute>
         } />
