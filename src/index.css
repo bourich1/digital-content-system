@@ -8,6 +8,7 @@
 @layer base {
   body {
     @apply bg-black text-white font-sans antialiased;
+    zoom: 0.75;
   }
 }
 
