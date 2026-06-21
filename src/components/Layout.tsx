@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -9,7 +9,12 @@ import {
   LogOut, 
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  Handshake,
+  Volume2,
+  ListTodo,
+  Timer,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/Button';
@@ -40,11 +45,61 @@ export const Layout = ({ children }: LayoutProps) => {
     setIsLogoutModalOpen(false);
   };
 
+  // Notification Logic
+  useEffect(() => {
+    const checkNotifications = async () => {
+      if (!('Notification' in window)) return;
+      if (Notification.permission !== 'granted') {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+      }
+
+      try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+        const { data: collabs, error } = await supabase
+          .from('collaborations')
+          .select('id, brand_name, posting_date')
+          .in('posting_date', [todayStr, tomorrowStr]);
+
+        if (error || !collabs) return;
+
+        const notified = JSON.parse(localStorage.getItem('notified_collabs') || '{}');
+        let updatedNotified = { ...notified };
+
+        collabs.forEach(collab => {
+          const isToday = collab.posting_date === todayStr;
+          const status = isToday ? 'today' : 'tomorrow';
+          const notificationKey = `${collab.id}_${status}`;
+
+          if (!notified[notificationKey]) {
+            new Notification(`Upcoming Collaboration!`, {
+              body: `Reminder: You have a collaboration with ${collab.brand_name} scheduled for ${isToday ? 'Today' : 'Tomorrow'}.`,
+              icon: '/logo.png'
+            });
+            updatedNotified[notificationKey] = true;
+          }
+        });
+
+        localStorage.setItem('notified_collabs', JSON.stringify(updatedNotified));
+      } catch (err) {
+        console.error('Failed to check notifications:', err);
+      }
+    };
+
+    checkNotifications();
+  }, []);
+
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Users, label: 'Creators', path: '/creators' },
     { icon: Lightbulb, label: 'Content Ideas', path: '/ideas' },
-    { icon: BarChart2, label: 'Analytics', path: '/analytics' },
+    { icon: Handshake, label: 'Collaborations', path: '/collaborations' },
+    { icon: CalendarIcon, label: 'Calendar', path: '/calendar' },
+    { icon: Timer, label: 'Focus Room', path: '/focus' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

@@ -6,8 +6,11 @@ import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
 import Creators from '@/pages/Creators';
 import ContentIdeas from '@/pages/ContentIdeas';
-import Analytics from '@/pages/Analytics';
 import Settings from '@/pages/Settings';
+import Collaborations from '@/pages/Collaborations';
+import Tasks from '@/pages/Tasks';
+import FocusRoom from '@/pages/FocusRoom';
+import Calendar from '@/pages/Calendar';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 
@@ -75,9 +78,27 @@ export default function App() {
           </ProtectedRoute>
         } />
         
-        <Route path="/analytics" element={
+        <Route path="/collaborations" element={
           <ProtectedRoute session={session}>
-            <Analytics />
+            <Collaborations />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/calendar" element={
+          <ProtectedRoute session={session}>
+            <Calendar />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/tasks" element={
+          <ProtectedRoute session={session}>
+            <Tasks />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/focus" element={
+          <ProtectedRoute session={session}>
+            <FocusRoom />
           </ProtectedRoute>
         } />
         
