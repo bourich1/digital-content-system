@@ -14,7 +14,8 @@ import {
   Volume2,
   ListTodo,
   Timer,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Wrench
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/Button';
@@ -100,6 +101,7 @@ export const Layout = ({ children }: LayoutProps) => {
     { icon: Handshake, label: 'Collaborations', path: '/collaborations' },
     { icon: CalendarIcon, label: 'Calendar', path: '/calendar' },
     { icon: Timer, label: 'Focus Room', path: '/focus' },
+    { icon: Wrench, label: 'Tools', path: '/tools' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

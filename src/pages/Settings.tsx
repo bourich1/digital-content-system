@@ -21,7 +21,7 @@ export default function Settings() {
       toast.success("Notifications enabled!");
       new Notification("Content Circle", {
         body: "Notifications are now active.",
-        icon: "/vite.svg"
+        icon: "/icon.png"
       });
     } else {
       toast.error("Notification permission denied");
@@ -32,7 +32,7 @@ export default function Settings() {
     if (notificationPermission === "granted") {
       new Notification("Test Notification", {
         body: "This is a test notification from Content Circle.",
-        icon: "/vite.svg"
+        icon: "/icon.png"
       });
       toast.success("Test notification sent");
     } else {
@@ -96,7 +96,7 @@ export default function Settings() {
                 </p>
               </div>
             </div>
-            <Button variant={soundEnabled ? "default" : "outline"} onClick={() => {
+            <Button variant={soundEnabled ? "primary" : "outline"} onClick={() => {
               setSoundEnabled(!soundEnabled);
               toast.success(!soundEnabled ? 'Sounds enabled' : 'Sounds disabled');
             }}>

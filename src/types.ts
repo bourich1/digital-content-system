@@ -97,3 +97,15 @@ export interface Collaboration {
   created_at: string;
   updated_at: string;
 }
+
+export type ToolCategory = 'Video Editing' | 'Development' | 'Design' | 'AI Tools' | 'Gaming' | 'Extensions' | 'Other';
+
+export interface Tool {
+  id: string;
+  name: string;
+  url: string;
+  description?: string;
+  logo_url?: string;
+  category: ToolCategory;
+  created_at?: string;
+}

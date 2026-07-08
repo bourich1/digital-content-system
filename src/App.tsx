@@ -11,6 +11,7 @@ import Collaborations from '@/pages/Collaborations';
 import Tasks from '@/pages/Tasks';
 import FocusRoom from '@/pages/FocusRoom';
 import Calendar from '@/pages/Calendar';
+import Tools from '@/pages/Tools';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 
@@ -99,6 +100,12 @@ export default function App() {
         <Route path="/focus" element={
           <ProtectedRoute session={session}>
             <FocusRoom />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/tools" element={
+          <ProtectedRoute session={session}>
+            <Tools />
           </ProtectedRoute>
         } />
         

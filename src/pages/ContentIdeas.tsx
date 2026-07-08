@@ -15,6 +15,16 @@ const initialIdeas: ContentIdea[] = [];
 
 const statuses: IdeaStatus[] = ['Idea', 'Script', 'Filmed', 'Edited', 'Ready', 'Posted'];
 
+const getFaviconUrl = (url?: string) => {
+  if (!url) return null;
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  } catch (e) {
+    return null;
+  }
+};
+
 export default function ContentIdeas() {
   const [ideas, setIdeas] = useState<ContentIdea[]>(() => {
     const saved = localStorage.getItem('content_circle_ideas');
@@ -150,6 +160,14 @@ export default function ContentIdeas() {
                   <Card hoverEffect className="py-4 px-5 flex items-center justify-between border-l-4 border-l-transparent hover:border-l-orange-500 transition-all">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
+                        {idea.source_url && getFaviconUrl(idea.source_url) && (
+                          <img 
+                            src={getFaviconUrl(idea.source_url)!} 
+                            alt="Source Icon" 
+                            className="w-5 h-5 rounded-sm bg-white/10 object-cover"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        )}
                         <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors">{idea.title}</h3>
                         <Badge status={idea.status}>{idea.status}</Badge>
                       </div>
@@ -229,7 +247,19 @@ export default function ContentIdeas() {
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        {getFaviconUrl(viewingIdea.source_url) ? (
+                          <img 
+                            src={getFaviconUrl(viewingIdea.source_url)!} 
+                            alt="" 
+                            className="w-4 h-4 rounded-sm"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              // Fallback to ExternalLink icon could be handled via state, but hiding is okay for now.
+                            }}
+                          />
+                        ) : (
+                          <ExternalLink className="w-4 h-4" />
+                        )}
                         View Source
                       </a>
                     </div>
