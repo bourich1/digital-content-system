@@ -66,7 +66,7 @@ export default function Tools() {
 
       const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(urlToFetch)}`);
       const data = await response.json();
-      
+
       if (data.status === 'success') {
         const { title, description, logo, image } = data.data;
         setNewTool(prev => ({
@@ -144,8 +144,8 @@ export default function Tools() {
 
   const filteredTools = tools.filter(tool => {
     const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
-    const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (tool.description && tool.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (tool.description && tool.description.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
@@ -169,9 +169,8 @@ export default function Tools() {
         <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 sm:pb-0 hide-scrollbar">
           <button
             onClick={() => setSelectedCategory('All')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              selectedCategory === 'All' ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
-            }`}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === 'All' ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+              }`}
           >
             All
           </button>
@@ -179,15 +178,14 @@ export default function Tools() {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                selectedCategory === category ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                }`}
             >
               {category}
             </button>
           ))}
         </div>
-        
+
         <div className="relative w-full sm:w-64 shrink-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
@@ -211,7 +209,7 @@ export default function Tools() {
           </div>
           <h3 className="text-xl font-bold mb-2">No tools found</h3>
           <p className="text-zinc-400 max-w-sm mx-auto mb-6">
-            {searchQuery || selectedCategory !== 'All' 
+            {searchQuery || selectedCategory !== 'All'
               ? 'No tools match your current filters. Try adjusting your search or category.'
               : 'Keep all your important tools and resources in one place. Add your first tool to get started.'}
           </p>
@@ -256,11 +254,11 @@ export default function Tools() {
                   </span>
                 </div>
               </div>
-              
+
               <p className="text-sm text-zinc-400 flex-1 line-clamp-3 mb-4">
                 {tool.description || 'No description provided.'}
               </p>
-              
+
               <a
                 href={tool.url}
                 target="_blank"
