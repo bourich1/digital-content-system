@@ -9,9 +9,7 @@ import { ContentIdea, IdeaStatus } from '@/types';
 import { generateId, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-
-// Mock data
-const initialIdeas: ContentIdea[] = [];
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 const statuses: IdeaStatus[] = ['Idea', 'Script', 'Filmed', 'Edited', 'Ready', 'Posted'];
 
@@ -26,14 +24,89 @@ const getFaviconUrl = (url?: string) => {
 };
 
 export default function ContentIdeas() {
-  const [ideas, setIdeas] = useState<ContentIdea[]>(() => {
-    const saved = localStorage.getItem('content_circle_ideas');
-    return saved ? JSON.parse(saved) : initialIdeas;
-  });
+  const [ideas, setIdeas] = useState<ContentIdea[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localIdeasToMigrate, setLocalIdeasToMigrate] = useState<ContentIdea[]>([]);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('content_circle_ideas', JSON.stringify(ideas));
-  }, [ideas]);
+    fetchIdeas();
+    checkLocalIdeas();
+  }, []);
+
+  const checkLocalIdeas = () => {
+    try {
+      const saved = localStorage.getItem('content_circle_ideas');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setLocalIdeasToMigrate(parsed);
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing local ideas', e);
+    }
+  };
+
+  const migrateLocalIdeas = async () => {
+    if (!isSupabaseConfigured() || localIdeasToMigrate.length === 0) return;
+    
+    setIsMigrating(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('Not authenticated');
+
+      const ideasToInsert = localIdeasToMigrate.map(idea => ({
+        user_id: userData.user.id,
+        title: idea.title,
+        status: idea.status,
+        source_url: idea.source_url,
+        notes: idea.notes,
+        created_at: idea.created_at || new Date().toISOString()
+      }));
+
+      const { error } = await supabase
+        .from('content_ideas')
+        .insert(ideasToInsert);
+
+      if (error) throw error;
+
+      toast.success(`${ideasToInsert.length} ideas migrated successfully!`);
+      localStorage.removeItem('content_circle_ideas');
+      setLocalIdeasToMigrate([]);
+      fetchIdeas();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to migrate ideas');
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
+  const fetchIdeas = async () => {
+    if (!isSupabaseConfigured()) {
+      // Mock data if Supabase isn't configured
+      const saved = localStorage.getItem('content_circle_ideas');
+      if (saved) setIdeas(JSON.parse(saved));
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('content_ideas')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setIdeas(data || []);
+    } catch (err: any) {
+      toast.error('Failed to load ideas');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<IdeaStatus | 'All'>('All');
@@ -66,20 +139,67 @@ export default function ContentIdeas() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingIdea) {
-      setIdeas(ideas.map(i => i.id === editingIdea.id ? { ...i, ...formData } as ContentIdea : i));
-      toast.success('Idea updated successfully');
-    } else {
-      const newIdea: ContentIdea = {
-        id: generateId(),
-        ...formData as Omit<ContentIdea, 'id'>
-      };
-      setIdeas([newIdea, ...ideas]);
-      toast.success('Idea created successfully');
+    setIsSubmitting(true);
+    
+    if (!isSupabaseConfigured()) {
+      // Fallback for local storage if no supabase
+      let updatedIdeas = [];
+      if (editingIdea) {
+        updatedIdeas = ideas.map(i => i.id === editingIdea.id ? { ...i, ...formData } as ContentIdea : i);
+        toast.success('Idea updated locally');
+      } else {
+        const newIdea = { id: generateId(), ...formData as Omit<ContentIdea, 'id'>, created_at: new Date().toISOString() };
+        updatedIdeas = [newIdea, ...ideas];
+        toast.success('Idea created locally');
+      }
+      setIdeas(updatedIdeas);
+      localStorage.setItem('content_circle_ideas', JSON.stringify(updatedIdeas));
+      setIsSubmitting(false);
+      setIsModalOpen(false);
+      return;
     }
-    setIsModalOpen(false);
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('Not authenticated');
+
+      if (editingIdea) {
+        const { error } = await supabase
+          .from('content_ideas')
+          .update({
+            title: formData.title,
+            status: formData.status,
+            source_url: formData.source_url,
+            notes: formData.notes
+          })
+          .eq('id', editingIdea.id);
+
+        if (error) throw error;
+        toast.success('Idea updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('content_ideas')
+          .insert([{
+            user_id: userData.user.id,
+            title: formData.title,
+            status: formData.status,
+            source_url: formData.source_url,
+            notes: formData.notes
+          }]);
+
+        if (error) throw error;
+        toast.success('Idea created successfully');
+      }
+      
+      await fetchIdeas();
+      setIsModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save idea');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDeleteClick = (id: string) => {
@@ -87,12 +207,33 @@ export default function ContentIdeas() {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (ideaToDelete) {
-      setIdeas(ideas.filter(i => i.id !== ideaToDelete));
+  const confirmDelete = async () => {
+    if (!ideaToDelete) return;
+
+    if (!isSupabaseConfigured()) {
+      const updatedIdeas = ideas.filter(i => i.id !== ideaToDelete);
+      setIdeas(updatedIdeas);
+      localStorage.setItem('content_circle_ideas', JSON.stringify(updatedIdeas));
+      setIdeaToDelete(null);
+      setIsDeleteModalOpen(false);
+      toast.success('Idea deleted locally');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('content_ideas')
+        .delete()
+        .eq('id', ideaToDelete);
+
+      if (error) throw error;
+      
       setIdeaToDelete(null);
       setIsDeleteModalOpen(false);
       toast.success('Idea deleted successfully');
+      await fetchIdeas();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete idea');
     }
   };
 
@@ -139,73 +280,100 @@ export default function ContentIdeas() {
           </select>
         </div>
 
+        {/* Migration Banner */}
+        {localIdeasToMigrate.length > 0 && isSupabaseConfigured() && (
+          <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 className="text-orange-400 font-medium">Local ideas found</h4>
+              <p className="text-sm text-zinc-400 mt-1">
+                We found {localIdeasToMigrate.length} ideas saved in your browser that aren't in your database yet.
+              </p>
+            </div>
+            <Button 
+              onClick={migrateLocalIdeas} 
+              disabled={isMigrating}
+              className="whitespace-nowrap bg-orange-600 hover:bg-orange-700"
+            >
+              {isMigrating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {isMigrating ? 'Moving...' : 'Move to Database'}
+            </Button>
+          </div>
+        )}
+
         {/* Kanban-ish List */}
         <div className="space-y-3 pb-20">
-          <AnimatePresence>
-            {filteredIdeas.length === 0 ? (
-              <div className="text-center py-20 text-zinc-500">
-                <p>No ideas found. Start creating!</p>
-              </div>
-            ) : (
-              filteredIdeas.map((idea) => (
-                <motion.div
-                  key={idea.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  onClick={() => handleOpenModal(idea)}
-                  className="group cursor-pointer"
-                >
-                  <Card hoverEffect className="py-4 px-5 flex items-center justify-between border-l-4 border-l-transparent hover:border-l-orange-500 transition-all">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        {idea.source_url && getFaviconUrl(idea.source_url) && (
-                          <img 
-                            src={getFaviconUrl(idea.source_url)!} 
-                            alt="Source Icon" 
-                            className="w-5 h-5 rounded-sm bg-white/10 object-cover"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                          />
+          {loading ? (
+            <div className="flex items-center justify-center py-20 text-zinc-500">
+              <Loader2 className="w-6 h-6 animate-spin text-orange-500 mr-2" />
+              Loading ideas...
+            </div>
+          ) : (
+            <AnimatePresence>
+              {filteredIdeas.length === 0 ? (
+                <div className="text-center py-20 text-zinc-500">
+                  <p>No ideas found. Start creating!</p>
+                </div>
+              ) : (
+                filteredIdeas.map((idea) => (
+                  <motion.div
+                    key={idea.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    onClick={() => handleOpenModal(idea)}
+                    className="group cursor-pointer"
+                  >
+                    <Card hoverEffect className="py-4 px-5 flex items-center justify-between border-l-4 border-l-transparent hover:border-l-orange-500 transition-all">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          {idea.source_url && getFaviconUrl(idea.source_url) && (
+                            <img 
+                              src={getFaviconUrl(idea.source_url)!} 
+                              alt="Source Icon" 
+                              className="w-5 h-5 rounded-sm bg-white/10 object-cover"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          )}
+                          <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors">{idea.title}</h3>
+                          <Badge status={idea.status}>{idea.status}</Badge>
+                        </div>
+                        {idea.notes && (
+                          <p className="text-sm text-zinc-500 line-clamp-1">{idea.notes}</p>
                         )}
-                        <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors">{idea.title}</h3>
-                        <Badge status={idea.status}>{idea.status}</Badge>
                       </div>
-                      {idea.notes && (
-                        <p className="text-sm text-zinc-500 line-clamp-1">{idea.notes}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-blue-400 hover:text-blue-300"
-                        onClick={(e) => { e.stopPropagation(); setViewingIdea(idea); }}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-zinc-400 hover:text-white"
-                        onClick={(e) => { e.stopPropagation(); handleOpenModal(idea); }}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-red-400 hover:text-red-300"
-                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(idea.id); }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </AnimatePresence>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-blue-400 hover:text-blue-300"
+                          onClick={(e) => { e.stopPropagation(); setViewingIdea(idea); }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-zinc-400 hover:text-white"
+                          onClick={(e) => { e.stopPropagation(); handleOpenModal(idea); }}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-red-400 hover:text-red-300"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteClick(idea.id); }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
+            </AnimatePresence>
+          )}
         </div>
       </div>
 
@@ -254,7 +422,6 @@ export default function ContentIdeas() {
                             className="w-4 h-4 rounded-sm"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
-                              // Fallback to ExternalLink icon could be handled via state, but hiding is okay for now.
                             }}
                           />
                         ) : (
@@ -359,7 +526,13 @@ export default function ContentIdeas() {
                     />
                     <div className="flex justify-end gap-3 pt-4">
                       <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                      <Button type="submit">{editingIdea ? 'Save Changes' : 'Create Idea'}</Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+                        ) : (
+                          editingIdea ? 'Save Changes' : 'Create Idea'
+                        )}
+                      </Button>
                     </div>
                   </form>
                 </CardContent>

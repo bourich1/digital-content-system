@@ -4,6 +4,7 @@ import { Users, Lightbulb, Brain, FileText, Video, Clapperboard, CheckCircle2, S
 import { motion } from 'motion/react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Creator, ContentIdea, IdeaStatus } from '@/types';
+import { DailyQuoteBanner } from '@/components/DailyQuoteBanner';
 
 const STATUS_ICONS: Record<IdeaStatus, typeof Brain> = {
   Idea: Brain,
@@ -64,6 +65,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <DailyQuoteBanner />
+      
       <div>
         <h2 className="text-3xl font-bold text-white">Dashboard</h2>
         <p className="text-zinc-400 mt-1">Overview of your content pipeline.</p>
