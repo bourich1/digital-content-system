@@ -18,7 +18,7 @@ export default function Terms() {
         <div className="container mx-auto px-6 max-w-5xl h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <img src="/logo.png" alt="Logo" className="h-7 w-auto object-contain brightness-0 invert" />
-            <span className="font-bold text-lg tracking-tight">Digital Content System</span>
+            <span className="font-bold text-lg tracking-tight">BoostD</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -66,7 +66,7 @@ export default function Terms() {
               1. Acceptance of Terms
             </h2>
             <p className="text-zinc-300">
-              By accessing or using <span className="text-white font-medium">Digital Content System</span>, 
+              By accessing or using <span className="text-white font-medium">BoostD</span> (available at <a href="https://www.boostd.app" className="text-orange-400 hover:underline">https://www.boostd.app</a>), 
               you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
             </p>
           </section>
@@ -120,7 +120,7 @@ export default function Terms() {
               5. Contact Information
             </h2>
             <p className="text-zinc-300">
-              For questions regarding our terms, reach out at <span className="text-white">support@boostd.app</span>.
+              For questions regarding our terms, reach out at <a href="mailto:support@boostd.app" className="text-orange-400 hover:underline font-medium">support@boostd.app</a>.
             </p>
           </section>
 

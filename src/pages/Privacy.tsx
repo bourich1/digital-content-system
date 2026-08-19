@@ -18,7 +18,7 @@ export default function Privacy() {
         <div className="container mx-auto px-6 max-w-5xl h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <img src="/logo.png" alt="Logo" className="h-7 w-auto object-contain brightness-0 invert" />
-            <span className="font-bold text-lg tracking-tight">Digital Content System</span>
+            <span className="font-bold text-lg tracking-tight">BoostD</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -67,9 +67,9 @@ export default function Privacy() {
               1. Overview & Commitment
             </h2>
             <p className="text-zinc-300">
-              Welcome to <span className="text-white font-medium">Digital Content System</span> ("we", "our", or "us"). 
+              Welcome to <span className="text-white font-medium">BoostD</span> ("we", "our", or "us"). 
               Your privacy is extremely important to us. This Privacy Policy explains how we collect, use, disclose, 
-              and safeguard your information when you access and use our platform, website, and services.
+              and safeguard your information when you access and use our platform, website (https://www.boostd.app), and services.
             </p>
             <p className="text-zinc-400 text-sm">
               By using our service, you agree to the collection and use of information in accordance with this policy.
@@ -190,9 +190,10 @@ export default function Privacy() {
               If you have any questions, concerns, or feedback regarding this Privacy Policy or our security practices, feel free to reach out to us:
             </p>
             <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-zinc-300 text-sm space-y-1">
-              <p><strong className="text-white">Platform:</strong> Digital Content System</p>
+              <p><strong className="text-white">Application:</strong> BoostD</p>
+              <p><strong className="text-white">Website:</strong> <a href="https://www.boostd.app" className="text-orange-400 hover:underline">https://www.boostd.app</a></p>
               <p><strong className="text-white">Email:</strong> support@boostd.app</p>
-              <p><strong className="text-white">Support Page:</strong> <Link to="/support" className="text-orange-400 hover:underline">Support Center</Link></p>
+              <p><strong className="text-white">Support:</strong> <Link to="/support" className="text-orange-400 hover:underline">Support Center</Link></p>
             </div>
           </section>
 

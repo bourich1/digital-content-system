@@ -2,8 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Brain, CheckCircle, Clock, Users, Zap, Layout as LayoutIcon, Target, ChevronRight } from 'lucide-react';
+import { 
+  Brain, 
+  CheckCircle2, 
+  Clock, 
+  Users, 
+  Zap, 
+  Layout as LayoutIcon, 
+  Target, 
+  ChevronRight, 
+  Calendar as CalendarIcon, 
+  Sparkles, 
+  Shield, 
+  ArrowRight, 
+  DollarSign, 
+  Check, 
+  Lock, 
+  Mail, 
+  Share2, 
+  Briefcase, 
+  Video, 
+  Layers
+} from 'lucide-react';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -19,66 +39,120 @@ export default function Landing() {
 
   const features = [
     {
-      title: "Content Ideas",
-      description: "Brainstorm and organize your content ideas in one centralized hub. Never lose a great idea again.",
-      icon: <Brain className="w-6 h-6 text-orange-400" />
+      title: "Content Idea Management",
+      description: "Capture, organize, and prioritize your content concepts in one centralized hub. Tag ideas by social platform (YouTube, Instagram, TikTok, X, LinkedIn) and status.",
+      icon: <Brain className="w-6 h-6 text-orange-400" />,
+      badge: "Ideation"
     },
     {
-      title: "Task Management",
-      description: "Break down your projects into actionable tasks. Track progress and meet your deadlines effortlessly.",
-      icon: <CheckCircle className="w-6 h-6 text-green-400" />
+      title: "Editorial Content Calendar",
+      description: "Visualize your entire publishing schedule on an interactive calendar. Schedule drops, manage upcoming deadlines, and keep a consistent publishing rhythm.",
+      icon: <CalendarIcon className="w-6 h-6 text-amber-400" />,
+      badge: "Scheduling"
     },
     {
-      title: "Focus Room",
-      description: "Deep work sessions with built-in timers. Eliminate distractions and boost your productivity.",
-      icon: <Target className="w-6 h-6 text-orange-400" />
+      title: "Actionable Task Workflow",
+      description: "Break complex creative projects into clear, actionable tasks. Track progress through customizable stages from draft to final publication.",
+      icon: <CheckCircle2 className="w-6 h-6 text-emerald-400" />,
+      badge: "Execution"
     },
     {
-      title: "Collaborations",
-      description: "Connect with other creators, manage sponsorships, and track your brand deals all in one place.",
-      icon: <Users className="w-6 h-6 text-blue-400" />
+      title: "Focus Room & Deep Work",
+      description: "Eliminate creative burnout with built-in Pomodoro deep work timers and relaxing ambient soundscapes (rain, cafe, nature) tailored for flow state.",
+      icon: <Target className="w-6 h-6 text-rose-400" />,
+      badge: "Productivity"
+    },
+    {
+      title: "Brand Deals & Sponsorships",
+      description: "Manage your sponsorship pipeline from initial outreach to contract sign-off, deliverable tracking, and partnership revenue reporting.",
+      icon: <DollarSign className="w-6 h-6 text-blue-400" />,
+      badge: "Monetization"
+    },
+    {
+      title: "AI Creator Assistant Tools",
+      description: "Accelerate your creative output with built-in AI tools for generating high-engagement video hooks, outline scripts, captions, and hashtag strategies.",
+      icon: <Sparkles className="w-6 h-6 text-purple-400" />,
+      badge: "AI Powered"
     }
   ];
 
-  const advantages = [
+  const targetAudiences = [
     {
-      title: "All-in-One Workspace",
-      description: "Stop jumping between 5 different apps. Everything you need to run your content business is here.",
-      icon: <LayoutIcon className="w-5 h-5 text-white" />
+      title: "Content Creators & YouTubers",
+      description: "Manage multi-platform video pipelines, store scripts and outlines, track sponsorship contracts, and stick to consistent publishing schedules.",
+      icon: <Video className="w-6 h-6 text-orange-400" />,
+      points: ["Idea backlog by channel", "Video production task lists", "Sponsorship pipeline tracker"]
     },
     {
-      title: "Save Time & Energy",
-      description: "Streamlined workflows mean less time managing and more time actually creating content.",
-      icon: <Clock className="w-5 h-5 text-white" />
+      title: "Social Media Managers",
+      description: "Plan, schedule, and execute multi-channel editorial calendars with deadline oversight and structured campaign workflows.",
+      icon: <Share2 className="w-6 h-6 text-blue-400" />,
+      points: ["Visual content calendar", "Status & approval tracking", "Multi-format content organization"]
     },
     {
-      title: "Supercharge Productivity",
-      description: "Built-in tools like the Focus Room and intelligent task tracking keep you in the flow state.",
-      icon: <Zap className="w-5 h-5 text-white" />
+      title: "Freelancers & Creative Solopreneurs",
+      description: "Consolidate your client projects, brand deals, daily deep work sessions, and task milestones inside one clean dashboard.",
+      icon: <Briefcase className="w-6 h-6 text-emerald-400" />,
+      points: ["Distraction-free Focus Room", "Clear task priorities", "Deliverables & revenue tracking"]
+    },
+    {
+      title: "Marketing Teams & Agencies",
+      description: "Maintain alignment across content creation, editorial planning, team collaboration, and creative resource tracking.",
+      icon: <Users className="w-6 h-6 text-purple-400" />,
+      points: ["Unified workspace", "Creator network directory", "Centralized asset organization"]
+    }
+  ];
+
+  const workflowSteps = [
+    {
+      step: "01",
+      title: "Capture & Brainstorm Ideas",
+      description: "Log inspiration immediately, categorize by platform and topic, or use AI assistant tools to brainstorm viral hooks and outlines.",
+      highlight: "Idea Hub & AI Tools"
+    },
+    {
+      step: "02",
+      title: "Plan on Editorial Calendar",
+      description: "Map your publication dates across channels. Balance your posting schedule and maintain consistency across all your platforms.",
+      highlight: "Visual Calendar"
+    },
+    {
+      step: "03",
+      title: "Execute with Focus & Tasks",
+      description: "Break content into production stages (scripting, filming, editing, review) and enter the Focus Room for deep work sessions.",
+      highlight: "Tasks & Focus Room"
+    },
+    {
+      step: "04",
+      title: "Track Deals & Scale",
+      description: "Track brand partnerships, monitor deal stages and revenue, connect with fellow creators, and grow your digital brand.",
+      highlight: "Brand Pipeline & Network"
     }
   ];
 
   const navLinks = [
-    { name: "Home", href: "#" },
     { name: "About", href: "#about" },
     { name: "Features", href: "#features" },
+    { name: "How It Works", href: "#how-it-works" },
+    { name: "Who It's For", href: "#audience" },
   ];
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-orange-500/30 overflow-x-hidden font-sans">
-      {/* Dynamic Background */}
+      {/* Background glow accents */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-orange-500/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-orange-500/20 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-orange-500/15 rounded-full blur-[140px]" />
+        <div className="absolute top-[40%] right-[-10%] w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[120px]" />
       </div>
 
       {/* Navbar */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-black/60 backdrop-blur-xl border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-xl border-b border-zinc-800/80 py-4' : 'bg-transparent py-6'}`}>
         <div className="container mx-auto px-6 max-w-6xl flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain brightness-0 invert" />
-          </div>
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/logo.png" alt="BoostD Logo" className="h-8 w-auto object-contain brightness-0 invert" />
+            <span className="font-extrabold text-xl tracking-tight text-white">BoostD</span>
+          </Link>
           
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
@@ -86,47 +160,53 @@ export default function Landing() {
                 {link.name}
               </a>
             ))}
+            <Link to="/privacy" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <Link to="/terms" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+              Terms
+            </Link>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => navigate('/login')}
-              className="text-sm font-medium text-white hover:text-zinc-300 transition-colors px-2 cursor-pointer"
+              className="text-sm font-medium text-zinc-300 hover:text-white transition-colors px-3 py-2 cursor-pointer"
             >
-              Log in
+              Sign In
             </button>
             <Button 
               onClick={() => navigate('/login?signup=true')}
-              className="bg-white text-black hover:bg-zinc-200 rounded-full px-6"
+              className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-5 text-sm font-semibold shadow-lg shadow-orange-500/20 border-0 cursor-pointer"
             >
-              Sign Up
+              Get Started
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 pt-32 pb-20">
-        {/* Hero Section */}
-        <section className="container mx-auto px-6 max-w-6xl pt-20 pb-32 text-center">
+      <main className="relative z-10 pt-28">
+        {/* HERO SECTION */}
+        <section className="container mx-auto px-6 max-w-5xl pt-16 pb-20 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-zinc-300 mb-8"
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs sm:text-sm font-medium text-orange-400 mb-8"
           >
             <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-            The Ultimate Creator Workspace
+            BoostD — Your Content Management Platform
           </motion.div>
           
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight"
+            className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-8 leading-[1.1]"
           >
-            Manage your content.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-500">
-              Master your workflow.
+            Organize, Manage, and Grow <br className="hidden sm:inline" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500">
+              Your Digital Content.
             </span>
           </motion.h1>
           
@@ -134,343 +214,457 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10"
+            className="text-lg md:text-xl text-zinc-300 max-w-3xl mx-auto mb-10 leading-relaxed"
           >
-            The all-in-one system designed specifically for digital creators to ideate, plan, collaborate, and execute without losing focus.
+            <strong className="text-white font-semibold">BoostD</strong> helps creators, social media managers, and teams organize, manage, and scale their digital content from one centralized workspace — uniting ideas, editorial calendars, tasks, deep work focus, and brand collaborations.
           </motion.p>
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
           >
             <Button 
               onClick={() => navigate('/login?signup=true')}
-              className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-orange-500 hover:bg-orange-600 text-white border-0 cursor-pointer"
+              className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-xl shadow-orange-500/25 border-0 cursor-pointer"
             >
               Get Started for Free
-              <ChevronRight className="ml-2 w-4 h-4" />
+              <ChevronRight className="ml-2 w-5 h-5" />
             </Button>
             <Button 
               onClick={() => navigate('/login')}
               variant="outline"
-              className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-white/5 border-white/10 hover:bg-white/10 cursor-pointer text-white"
+              className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-zinc-900/80 border-zinc-700 hover:bg-zinc-800 cursor-pointer text-white"
             >
-              Log in to account
+              Sign In to Account
             </Button>
+          </motion.div>
+
+          {/* Quick Trust Highlights */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm text-zinc-400"
+          >
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-orange-400" />
+              <span>Publicly Accessible</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-orange-400" />
+              <span>Google Sign-In Supported</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-orange-400" />
+              <span>Zero Installation Required</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-orange-400" />
+              <span>100% Data Ownership</span>
+            </div>
           </motion.div>
         </section>
 
-        {/* How It Works Section */}
-        <section id="how-it-works" className="container mx-auto px-6 max-w-6xl py-24">
-          <div className="text-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-zinc-300 mb-6"
-            >
-              <Zap className="w-4 h-4 text-orange-500" />
-              How It Works
-            </motion.div>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-3xl md:text-5xl font-bold mb-6"
-            >
-              Start in <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-500">Four Simple Steps</span>
-            </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="text-zinc-400 max-w-2xl mx-auto text-lg"
-            >
-              Your journey to joining the community, building your profile, and scaling your success.
-            </motion.p>
+        {/* HERO PRODUCT PREVIEW CARD */}
+        <section className="container mx-auto px-6 max-w-5xl mb-24">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="rounded-3xl border border-zinc-800 bg-zinc-950/80 p-4 sm:p-6 shadow-2xl backdrop-blur-xl"
+          >
+            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                <span className="ml-2 text-xs font-mono text-zinc-400">https://www.boostd.app/dashboard</span>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                BoostD Workspace
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Box 1: Idea Board */}
+              <div className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                    <Brain className="w-4 h-4 text-orange-400" />
+                    Content Ideas
+                  </span>
+                  <span className="text-[10px] bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded-full font-medium">12 Active</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-xs">
+                    <p className="font-medium text-white">10 Productivity Hacks for 2026</p>
+                    <div className="flex items-center gap-2 mt-1 text-[10px] text-zinc-400">
+                      <span className="text-red-400 font-medium">YouTube</span>
+                      <span>•</span>
+                      <span className="text-orange-400">High Priority</span>
+                    </div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-xs">
+                    <p className="font-medium text-white">Behind-the-Scenes Setup Tour</p>
+                    <div className="flex items-center gap-2 mt-1 text-[10px] text-zinc-400">
+                      <span className="text-pink-400 font-medium">Instagram</span>
+                      <span>•</span>
+                      <span className="text-zinc-400">In Progress</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Box 2: Editorial Calendar & Tasks */}
+              <div className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                    <CalendarIcon className="w-4 h-4 text-amber-400" />
+                    Content Schedule
+                  </span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">This Week</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-xs flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-white">AI Tools Breakdown Video</p>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">Thursday, 3:00 PM</p>
+                    </div>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-xs flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-white">Newsletter Edition #42</p>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">Saturday, 10:00 AM</p>
+                    </div>
+                    <span className="w-2 h-2 rounded-full bg-blue-400" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Box 3: Focus & Brand Deals */}
+              <div className="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                    <Target className="w-4 h-4 text-rose-400" />
+                    Focus Room
+                  </span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">Active</span>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-center mb-2">
+                  <p className="text-2xl font-mono font-bold text-orange-400 tracking-wider">25:00</p>
+                  <p className="text-[10px] text-zinc-400 mt-1">Deep Work Mode • Rain Soundscape</p>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-950/40 border border-zinc-800/60 text-[11px]">
+                  <span className="text-zinc-300">Brand Deals Pipeline</span>
+                  <span className="text-emerald-400 font-semibold">$2,400</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* ABOUT / PURPOSE SECTION */}
+        <section id="about" className="container mx-auto px-6 max-w-5xl py-20 border-t border-zinc-900">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-zinc-300 mb-4">
+              <Layers className="w-4 h-4 text-orange-400" />
+              About BoostD
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 tracking-tight">
+              What is <span className="text-orange-400">BoostD</span>?
+            </h2>
+            <p className="text-zinc-300 text-base sm:text-lg leading-relaxed">
+              <strong className="text-white font-medium">BoostD</strong> is a purpose-built digital content management platform created to eliminate friction in modern creative workflows. 
+              Instead of scattering ideas in note apps, deadlines on spreadsheets, tasks on project boards, and sponsorship records in inboxes, 
+              <strong className="text-white font-medium"> BoostD brings your entire creative operation into one intuitive workspace.</strong>
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Step 1 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 flex flex-col h-full hover:bg-zinc-900/80 transition-colors"
-            >
-              <div className="text-center mb-6">
-                <div className="flex justify-center items-start mb-2">
-                  <span className="text-5xl font-black tracking-tighter">01</span>
-                  <span className="text-yellow-500 ml-1 text-xl">★</span>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Create Account</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed min-h-[60px]">
-                  Sign up in seconds using your email or Google to join the elite community.
-                </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-6">
+              <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mb-4 text-orange-400 font-bold">
+                01
               </div>
-              <div className="mt-auto bg-zinc-950 rounded-2xl p-4 border border-white/5 relative overflow-hidden flex-1 flex flex-col justify-end">
-                <div className="flex gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="space-y-2 flex-1 pt-1">
-                    <div className="h-2 w-16 bg-zinc-800 rounded-full"></div>
-                    <div className="h-2 w-24 bg-zinc-800 rounded-full"></div>
-                  </div>
-                </div>
-                <div className="space-y-2 mb-4">
-                  <div className="w-full h-10 bg-zinc-900 border border-zinc-800 rounded-xl px-3 flex items-center text-xs text-zinc-500">
-                    name@example.com
-                  </div>
-                </div>
-                <div className="w-full h-10 bg-blue-600 rounded-xl flex items-center justify-center text-sm font-medium text-white shadow-[0_0_15px_rgba(37,99,235,0.3)]">
-                  Get Started →
-                </div>
-              </div>
-            </motion.div>
+              <h3 className="text-lg font-bold text-white mb-2">Centralized Content Hub</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Organize inspirations, drafts, multi-channel ideas, and publishing milestones in one structured repository designed specifically for creators.
+              </p>
+            </div>
 
-            {/* Step 2 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 flex flex-col h-full hover:bg-zinc-900/80 transition-colors"
-            >
-              <div className="text-center mb-6">
-                <div className="flex justify-center items-start mb-2">
-                  <span className="text-5xl font-black tracking-tighter">02</span>
-                  <span className="text-yellow-500 ml-1 text-xl">★</span>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Build Profile</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed min-h-[60px]">
-                  Add your specialty, short bio, and avatar to stand out in the network.
-                </p>
+            <div className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-6">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-4 text-amber-400 font-bold">
+                02
               </div>
-              <div className="mt-auto bg-zinc-950 rounded-2xl border border-white/5 overflow-hidden flex-1 relative">
-                <div className="h-16 bg-gradient-to-r from-blue-500/20 to-orange-500/20 w-full"></div>
-                <div className="px-4 pb-4 flex flex-col items-center -mt-8 relative z-10">
-                  <div className="w-16 h-16 rounded-full bg-zinc-800 border-4 border-zinc-950 flex items-center justify-center mb-3">
-                    <Users className="w-6 h-6 text-zinc-500" />
-                  </div>
-                  <div className="font-semibold text-sm mb-1 flex items-center gap-1">
-                    Mohamed Yassine <CheckCircle className="w-3 h-3 text-blue-500" />
-                  </div>
-                  <div className="text-[10px] text-zinc-500 mb-3">Software Engineer • Casablanca</div>
-                  <div className="flex gap-2 mb-4">
-                    <span className="px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[10px] flex items-center gap-1">
-                      <span className="text-[8px]">&lt;/&gt;</span> Developer
-                    </span>
-                    <span className="px-2 py-1 rounded-full bg-zinc-800 text-zinc-300 text-[10px]">
-                      UI/UX
-                    </span>
-                  </div>
-                  <div className="w-full text-center p-3 rounded-xl border border-zinc-800/50 bg-zinc-900/30">
-                    <p className="text-[10px] text-zinc-400 italic">"Passionate about building scalable web applications."</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+              <h3 className="text-lg font-bold text-white mb-2">Structured Execution</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Turn concepts into published assets using editorial calendar scheduling, task stages, and integrated deep work Pomodoro sessions.
+              </p>
+            </div>
 
-            {/* Step 3 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-              className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 flex flex-col h-full hover:bg-zinc-900/80 transition-colors"
-            >
-              <div className="text-center mb-6">
-                <div className="flex justify-center items-start mb-2">
-                  <span className="text-5xl font-black tracking-tighter">03</span>
-                  <span className="text-yellow-500 ml-1 text-xl">★</span>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Set Your Goals</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed min-h-[60px]">
-                  Tell us what brings you here (e.g. learning, networking) to personalize your experience.
-                </p>
+            <div className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-6">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4 text-blue-400 font-bold">
+                03
               </div>
-              <div className="mt-auto bg-zinc-950 rounded-2xl p-4 border border-white/5 flex-1 flex flex-col">
-                <div className="text-xs font-bold mb-1">What brings you here?</div>
-                <div className="text-[10px] text-zinc-500 mb-4">Select your primary goal to personalize your feed.</div>
-                
-                <div className="space-y-3">
-                  <div className="border border-blue-500/50 bg-blue-500/5 rounded-xl p-3 flex items-start gap-3">
-                    <div className="w-6 h-6 rounded bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Users className="w-3 h-3 text-blue-400" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs font-semibold mb-0.5">Build my network</div>
-                      <div className="text-[10px] text-zinc-500">Find partners and mentors.</div>
-                    </div>
-                    <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-3 h-3 text-white" />
-                    </div>
-                  </div>
-                  
-                  <div className="border border-zinc-800 rounded-xl p-3 flex items-start gap-3 opacity-50">
-                    <div className="w-6 h-6 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-[10px] font-bold text-zinc-400">$</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs font-semibold mb-0.5">Make money online</div>
-                      <div className="text-[10px] text-zinc-500">Freelance and sell products.</div>
-                    </div>
-                    <div className="w-4 h-4 rounded-full border border-zinc-700 flex-shrink-0"></div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Step 4 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 flex flex-col h-full hover:bg-zinc-900/80 transition-colors"
-            >
-              <div className="text-center mb-6">
-                <div className="flex justify-center items-start mb-2">
-                  <span className="text-5xl font-black tracking-tighter">04</span>
-                  <span className="text-yellow-500 ml-1 text-xl">★</span>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Access Dashboard</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed min-h-[60px]">
-                  Dive into your personalized dashboard, track your streak, and start growing.
-                </p>
-              </div>
-              <div className="mt-auto bg-zinc-950 rounded-2xl p-4 border border-white/5 flex-1 relative overflow-hidden flex flex-col">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <LayoutIcon className="w-3 h-3 text-blue-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">Dashboard Preview</span>
-                </div>
-                
-                <div className="flex-1 border border-zinc-800 rounded-lg bg-zinc-900/50 overflow-hidden flex flex-col min-h-[120px]">
-                  <div className="h-6 border-b border-zinc-800 flex items-center px-2 gap-1 bg-zinc-900">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                  </div>
-                  <div className="p-2 flex gap-2 h-full">
-                    <div className="w-1/4 h-full bg-zinc-800/50 rounded flex flex-col gap-1 p-1">
-                      <div className="w-full h-2 bg-zinc-700 rounded-full mb-2"></div>
-                      <div className="w-full h-1.5 bg-zinc-800 rounded-full"></div>
-                      <div className="w-3/4 h-1.5 bg-zinc-800 rounded-full"></div>
-                      <div className="w-full h-1.5 bg-zinc-800 rounded-full"></div>
-                    </div>
-                    <div className="w-3/4 h-full flex flex-col gap-2">
-                      <div className="flex gap-2 h-1/3">
-                        <div className="flex-1 bg-blue-500/20 border border-blue-500/30 rounded"></div>
-                        <div className="flex-1 bg-zinc-800/50 rounded"></div>
-                      </div>
-                      <div className="flex-1 bg-zinc-800/50 rounded"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+              <h3 className="text-lg font-bold text-white mb-2">Monetization & Network</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Track sponsorship pipelines, maintain contract deliverable statuses, and network with other verified creators in the BoostD community.
+              </p>
+            </div>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section id="features" className="container mx-auto px-6 max-w-6xl py-24">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything you need to create</h2>
-            <p className="text-zinc-400 max-w-2xl mx-auto">Replace your scattered tools with one cohesive system built for the modern digital creator.</p>
+        {/* FEATURES SECTION */}
+        <section id="features" className="container mx-auto px-6 max-w-6xl py-20 border-t border-zinc-900">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-zinc-300 mb-4">
+              <Zap className="w-4 h-4 text-orange-400" />
+              Core Capabilities
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 tracking-tight">
+              Everything you need to create and manage content
+            </h2>
+            <p className="text-zinc-400 text-base">
+              BoostD includes all the real tools you need to take content from initial spark to final delivery.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                className="bg-zinc-950/80 border border-zinc-800/80 hover:border-orange-500/40 rounded-2xl p-6 flex flex-col justify-between transition-all duration-200 group"
               >
-                <Card className="bg-zinc-900/50 border-white/5 hover:bg-zinc-900/80 transition-all duration-300 h-full group">
-                  <CardContent className="p-8">
-                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:scale-105 transition-transform">
                       {feature.icon}
                     </div>
-                    <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                    <p className="text-zinc-400 leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300">
+                      {feature.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-orange-400 transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-zinc-400 text-sm leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Advantages Section */}
-        <section id="about" className="container mx-auto px-6 max-w-6xl py-24">
-          <div className="bg-gradient-to-br from-zinc-900/80 to-black border border-white/10 rounded-3xl p-8 md:p-12 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px]" />
-            
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">Why choose our system?</h2>
-                <p className="text-zinc-400 text-lg mb-8 leading-relaxed">
-                  We understand that creating content is hard enough. Managing it shouldn't be. Our platform is meticulously crafted to remove friction from your creative process.
+        {/* HOW IT WORKS SECTION */}
+        <section id="how-it-works" className="container mx-auto px-6 max-w-6xl py-20 border-t border-zinc-900">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-zinc-300 mb-4">
+              <Clock className="w-4 h-4 text-orange-400" />
+              Simple Workflow
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 tracking-tight">
+              How BoostD Works in Four Simple Steps
+            </h2>
+            <p className="text-zinc-400 text-base">
+              A structured roadmap from raw inspiration to consistent multi-channel publishing.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {workflowSteps.map((step, index) => (
+              <motion.div
+                key={step.step}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-6 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-3xl font-black font-mono text-zinc-700">{step.step}</span>
+                    <span className="text-xs font-medium text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                      {step.highlight}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-2">{step.title}</h3>
+                  <p className="text-zinc-400 text-xs leading-relaxed">{step.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* TARGET USERS SECTION */}
+        <section id="audience" className="container mx-auto px-6 max-w-6xl py-20 border-t border-zinc-900">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-zinc-300 mb-4">
+              <Users className="w-4 h-4 text-orange-400" />
+              Target Audience
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 tracking-tight">
+              Who is BoostD designed for?
+            </h2>
+            <p className="text-zinc-400 text-base">
+              Tailored specifically for digital creators, media professionals, and modern content teams.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {targetAudiences.map((audience, index) => (
+              <motion.div
+                key={audience.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-7 flex flex-col justify-between hover:border-zinc-700 transition-colors"
+              >
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0">
+                      {audience.icon}
+                    </div>
+                    <h3 className="text-lg font-bold text-white">{audience.title}</h3>
+                  </div>
+                  <p className="text-zinc-400 text-sm leading-relaxed mb-5">
+                    {audience.description}
+                  </p>
+                </div>
+                <div className="space-y-2 pt-4 border-t border-zinc-900">
+                  {audience.points.map((pt) => (
+                    <div key={pt} className="flex items-center gap-2 text-xs text-zinc-300">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
+                      <span>{pt}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECURITY & GOOGLE OAUTH TRANSPARENCY SECTION */}
+        <section className="container mx-auto px-6 max-w-5xl py-16 border-t border-zinc-900">
+          <div className="bg-zinc-950/80 border border-zinc-800 rounded-3xl p-8 sm:p-10">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="space-y-2 max-w-2xl">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-400">
+                  <Shield className="w-4 h-4" />
+                  Privacy, Security & Compliance
+                </div>
+                <h3 className="text-2xl font-bold text-white">
+                  Built with transparency and user trust at the core
+                </h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">
+                  BoostD adheres to Google OAuth API Services User Data Policies and strict privacy standards. We only use your authentication credentials to provide your secure personal workspace, and never share or sell your data.
                 </p>
-                <Button 
-                  onClick={() => navigate('/login?signup=true')}
-                  className="bg-white text-black hover:bg-zinc-200 rounded-full px-8"
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <Link 
+                  to="/privacy" 
+                  className="inline-flex items-center justify-center text-sm font-medium px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 transition-colors"
                 >
-                  Join the platform
-                </Button>
+                  Privacy Policy
+                </Link>
+                <Link 
+                  to="/terms" 
+                  className="inline-flex items-center justify-center text-sm font-medium px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 transition-colors"
+                >
+                  Terms of Service
+                </Link>
               </div>
-              
-              <div className="space-y-6">
-                {advantages.map((adv, index) => (
-                  <motion.div 
-                    key={adv.title}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="flex gap-4 items-start"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 mt-1">
-                      {adv.icon}
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-bold mb-1">{adv.title}</h4>
-                      <p className="text-zinc-400">{adv.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FINAL CTA SECTION */}
+        <section className="container mx-auto px-6 max-w-5xl py-20 text-center">
+          <div className="bg-gradient-to-b from-orange-500/10 via-zinc-950 to-zinc-950 border border-orange-500/20 rounded-3xl p-10 sm:p-14">
+            <h2 className="text-3xl sm:text-5xl font-extrabold mb-6 tracking-tight text-white">
+              Ready to organize your content with BoostD?
+            </h2>
+            <p className="text-zinc-300 text-base sm:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
+              Join creators and teams using BoostD to plan, track, and scale their digital content in one centralized platform.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button 
+                onClick={() => navigate('/login?signup=true')}
+                className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg shadow-orange-500/25 border-0 cursor-pointer"
+              >
+                Get Started Free
+                <ChevronRight className="ml-2 w-5 h-5" />
+              </Button>
+              <Button 
+                onClick={() => navigate('/login')}
+                variant="outline"
+                className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-zinc-900 border-zinc-700 hover:bg-zinc-800 text-white cursor-pointer"
+              >
+                Sign In
+              </Button>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-black py-12 relative z-10">
-        <div className="container mx-auto px-6 max-w-6xl flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2 opacity-70">
-            <img src="/logo.png" alt="Logo" className="h-6 w-auto object-contain brightness-0 invert" />
-            <span className="font-semibold tracking-tight">Digital Space</span>
+      {/* FOOTER */}
+      <footer className="border-t border-zinc-900 bg-black py-14 relative z-10">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            <div className="space-y-4 md:col-span-2">
+              <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="BoostD Logo" className="h-7 w-auto object-contain brightness-0 invert" />
+                <span className="font-extrabold text-xl tracking-tight text-white">BoostD</span>
+              </div>
+              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
+                BoostD is an all-in-one content management and creator productivity platform empowering creators, social media managers, and teams to organize ideas, schedule editorial calendars, manage tasks, and track brand collaborations.
+              </p>
+              <div className="text-xs text-zinc-500">
+                Official Website: <a href="https://www.boostd.app" className="text-orange-400 hover:underline">https://www.boostd.app</a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Platform</h4>
+              <ul className="space-y-2.5 text-sm text-zinc-400">
+                <li><a href="#about" className="hover:text-white transition-colors">About BoostD</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
+                <li><a href="#audience" className="hover:text-white transition-colors">Target Audience</a></li>
+                <li><Link to="/login" className="hover:text-white transition-colors">Sign In / Register</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal & Support</h4>
+              <ul className="space-y-2.5 text-sm text-zinc-400">
+                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link to="/support" className="hover:text-white transition-colors">Support Center</Link></li>
+                <li><a href="mailto:support@boostd.app" className="hover:text-white transition-colors">support@boostd.app</a></li>
+              </ul>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm text-zinc-400">
-            <Link to="/privacy" className="hover:text-white transition-colors">
-              Privacy Policy
-            </Link>
-            <Link to="/terms" className="hover:text-white transition-colors">
-              Terms of Service
-            </Link>
-          </div>
-          <div className="text-zinc-500 text-sm">
-            © {new Date().getFullYear()} Digital Content System. All rights reserved.
+
+          <div className="pt-8 border-t border-zinc-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-zinc-500">
+            <div>
+              © {new Date().getFullYear()} BoostD. All rights reserved.
+            </div>
+            <div className="flex items-center gap-6">
+              <Link to="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
+              <span>•</span>
+              <Link to="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
+              <span>•</span>
+              <a href="https://www.boostd.app" className="hover:text-zinc-300 transition-colors">boostd.app</a>
+            </div>
           </div>
         </div>
       </footer>

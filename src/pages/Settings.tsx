@@ -424,7 +424,7 @@ export default function Settings() {
 
                       <div className="flex justify-between items-end" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '32px', marginTop: 'auto' }}>
                         <div style={{ fontSize: '24px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
-                          Digital Content System
+                          BoostD
                         </div>
                         <div style={{ fontSize: '24px', fontWeight: 500, color: '#d8b4fe' }}>
                           {profileUrl.replace('https://', '').replace('http://', '')}
@@ -465,7 +465,7 @@ export default function Settings() {
 
             {/* Social Share Row */}
             <div className="flex flex-wrap items-center justify-center gap-4 w-full pt-4 border-t border-gray-800">
-              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out my profile on Digital Content System! ')}&url=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-[#1da1f2]/10 text-[#1da1f2] hover:bg-[#1da1f2] hover:text-white flex items-center justify-center transition-all">
+              <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out my profile on BoostD! ')}&url=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-[#1da1f2]/10 text-[#1da1f2] hover:bg-[#1da1f2] hover:text-white flex items-center justify-center transition-all">
                 <Twitter className="w-5 h-5 fill-current" />
               </a>
               <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5] hover:text-white flex items-center justify-center transition-all">
