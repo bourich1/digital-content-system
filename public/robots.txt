@@ -20,4 +20,4 @@ Disallow: /settings
 Disallow: /support
 
 # Sitemap location
-Sitemap: https://digitalcontentsystem.com/sitemap.xml
+Sitemap: https://www.boostd.app/sitemap.xml

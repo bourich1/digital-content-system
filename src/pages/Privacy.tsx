@@ -191,7 +191,7 @@ export default function Privacy() {
             </p>
             <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl text-zinc-300 text-sm space-y-1">
               <p><strong className="text-white">Platform:</strong> Digital Content System</p>
-              <p><strong className="text-white">Email:</strong> support@digitalcontentsystem.com</p>
+              <p><strong className="text-white">Email:</strong> support@boostd.app</p>
               <p><strong className="text-white">Support Page:</strong> <Link to="/support" className="text-orange-400 hover:underline">Support Center</Link></p>
             </div>
           </section>
