@@ -4,10 +4,11 @@ import { cn } from '@/lib/utils';
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  endIcon?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, ...props }, ref) => {
+  ({ className, label, error, endIcon, ...props }, ref) => {
     return (
       <div className="space-y-2 w-full">
         {label && (
@@ -15,15 +16,23 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
-          className={cn(
-            "flex h-10 w-full rounded-xl border border-white/10 bg-zinc-900/50 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
-            error && "border-red-500 focus:ring-red-500/50",
-            className
+        <div className="relative">
+          <input
+            className={cn(
+              "flex h-10 w-full rounded-xl border border-white/10 bg-zinc-900/50 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
+              error && "border-red-500 focus:ring-red-500/50",
+              endIcon && "pr-10",
+              className
+            )}
+            ref={ref}
+            {...props}
+          />
+          {endIcon && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400">
+              {endIcon}
+            </div>
           )}
-          ref={ref}
-          {...props}
-        />
+        </div>
         {error && (
           <p className="text-xs text-red-500">{error}</p>
         )}

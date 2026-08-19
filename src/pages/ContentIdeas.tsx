@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
-import { Plus, Search, Filter, X, Loader2, Eye, Edit2, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Search, Filter, X, Loader2, Eye, Edit2, Trash2, ExternalLink, LayoutGrid, List } from 'lucide-react';
 import { ContentIdea, IdeaStatus } from '@/types';
 import { generateId, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -29,6 +29,7 @@ export default function ContentIdeas() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localIdeasToMigrate, setLocalIdeasToMigrate] = useState<ContentIdea[]>([]);
   const [isMigrating, setIsMigrating] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   useEffect(() => {
     fetchIdeas();
@@ -270,6 +271,7 @@ export default function ContentIdeas() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          
           <select 
             className="h-10 rounded-xl border border-white/10 bg-zinc-900/50 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
             value={statusFilter}
@@ -278,6 +280,23 @@ export default function ContentIdeas() {
             <option value="All">All Statuses</option>
             {statuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+
+          <div className="flex items-center bg-zinc-900/50 rounded-xl border border-white/10 p-1 shrink-0">
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn("p-1.5 rounded-lg transition-colors", viewMode === 'list' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white")}
+              title="List View"
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={cn("p-1.5 rounded-lg transition-colors", viewMode === 'grid' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white")}
+              title="Grid View"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Migration Banner */}
@@ -301,16 +320,19 @@ export default function ContentIdeas() {
         )}
 
         {/* Kanban-ish List */}
-        <div className="space-y-3 pb-20">
+        <div className={cn(
+          "pb-20",
+          viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"
+        )}>
           {loading ? (
-            <div className="flex items-center justify-center py-20 text-zinc-500">
+            <div className="flex items-center justify-center py-20 text-zinc-500 col-span-full">
               <Loader2 className="w-6 h-6 animate-spin text-orange-500 mr-2" />
               Loading ideas...
             </div>
           ) : (
             <AnimatePresence>
               {filteredIdeas.length === 0 ? (
-                <div className="text-center py-20 text-zinc-500">
+                <div className="text-center py-20 text-zinc-500 col-span-full">
                   <p>No ideas found. Start creating!</p>
                 </div>
               ) : (
@@ -322,27 +344,44 @@ export default function ContentIdeas() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     onClick={() => handleOpenModal(idea)}
-                    className="group cursor-pointer"
+                    className="group cursor-pointer h-full"
                   >
-                    <Card hoverEffect className="py-4 px-5 flex items-center justify-between border-l-4 border-l-transparent hover:border-l-orange-500 transition-all">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-1">
-                          {idea.source_url && getFaviconUrl(idea.source_url) && (
-                            <img 
-                              src={getFaviconUrl(idea.source_url)!} 
-                              alt="Source Icon" 
-                              className="w-5 h-5 rounded-sm bg-white/10 object-cover"
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                            />
-                          )}
-                          <h3 className="font-medium text-white group-hover:text-orange-300 transition-colors">{idea.title}</h3>
-                          <Badge status={idea.status}>{idea.status}</Badge>
+                    <Card hoverEffect className={cn(
+                      "py-4 px-5 flex justify-between border-l-4 border-l-transparent hover:border-l-orange-500 transition-all h-full",
+                      viewMode === 'grid' ? "flex-col items-start gap-4" : "items-center"
+                    )}>
+                      <div className="flex-1 w-full">
+                        <div className={cn(
+                          "flex items-start justify-between gap-3 mb-2",
+                          viewMode === 'list' ? "items-center" : ""
+                        )}>
+                          <div className="flex items-center gap-3">
+                            {idea.source_url && getFaviconUrl(idea.source_url) && (
+                              <img 
+                                src={getFaviconUrl(idea.source_url)!} 
+                                alt="Source Icon" 
+                                className="w-5 h-5 rounded-sm bg-white/10 object-cover shrink-0"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              />
+                            )}
+                            <h3 className={cn(
+                              "font-medium text-white group-hover:text-orange-300 transition-colors",
+                              viewMode === 'grid' ? "line-clamp-2" : "line-clamp-1"
+                            )}>{idea.title}</h3>
+                          </div>
+                          <Badge status={idea.status} className="shrink-0">{idea.status}</Badge>
                         </div>
                         {idea.notes && (
-                          <p className="text-sm text-zinc-500 line-clamp-1">{idea.notes}</p>
+                          <p className={cn(
+                            "text-sm text-zinc-500",
+                            viewMode === 'grid' ? "line-clamp-3" : "line-clamp-1"
+                          )}>{idea.notes}</p>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className={cn(
+                        "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
+                        viewMode === 'grid' ? "w-full justify-end border-t border-white/5 pt-3 mt-auto" : ""
+                      )}>
                         <Button 
                           variant="ghost" 
                           size="icon" 

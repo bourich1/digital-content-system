@@ -15,13 +15,19 @@ import {
   ListTodo,
   Timer,
   Calendar as CalendarIcon,
-  Wrench
+  Wrench,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { useAuth } from '@/contexts/AuthContext';
+import { useFeatures } from '@/contexts/FeatureContext';
+import { Shield } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
+import { SupportChatWidget } from './SupportChatWidget';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -32,6 +38,9 @@ export const Layout = ({ children }: LayoutProps) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { profile, isDemoMode, exitDemoMode } = useAuth();
+  
+  const isSupportPage = location.pathname === '/support';
 
   const handleLogoutClick = () => {
     setIsLogoutModalOpen(true);
@@ -39,11 +48,20 @@ export const Layout = ({ children }: LayoutProps) => {
   };
 
   const confirmLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('supabase_url');
-    localStorage.removeItem('supabase_key');
-    navigate('/login');
     setIsLogoutModalOpen(false);
+
+    // Flush all Supabase session state from storage so a full reload
+    // boots into a clean AuthProvider with no stale session.
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('sb-'))
+      .forEach(key => localStorage.removeItem(key));
+
+    // signOut can throw AbortError in StrictMode (double-invocation lock conflict).
+    // Fire it and forget – we've already wiped storage so the session is dead anyway.
+    supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+
+    // Full hard reload – clears in-memory Supabase client state + React state
+    window.location.href = window.location.origin + '/login';
   };
 
   // Notification Logic
@@ -94,19 +112,43 @@ export const Layout = ({ children }: LayoutProps) => {
     checkNotifications();
   }, []);
 
+  const { features } = useFeatures();
+
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: Users, label: 'Creators', path: '/creators' },
-    { icon: Lightbulb, label: 'Content Ideas', path: '/ideas' },
-    { icon: Handshake, label: 'Collaborations', path: '/collaborations' },
-    { icon: CalendarIcon, label: 'Calendar', path: '/calendar' },
-    { icon: Timer, label: 'Focus Room', path: '/focus' },
-    { icon: Wrench, label: 'Tools', path: '/tools' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/', feature: null },
+    { icon: Users, label: 'Creators', path: '/creators', feature: 'creators' },
+    { icon: Lightbulb, label: 'Content Ideas', path: '/ideas', feature: 'ideas' },
+    { icon: Handshake, label: 'Collaborations', path: '/collaborations', feature: 'collaboration' },
+    { icon: CalendarIcon, label: 'Calendar', path: '/calendar', feature: 'calendar' },
+    { icon: Timer, label: 'Focus Room', path: '/focus', feature: 'focus_room' },
+    { icon: Wrench, label: 'Tools', path: '/tools', feature: 'ai_assistant' },
+    { icon: Settings, label: 'Settings', path: '/settings', feature: null },
   ];
 
   return (
     <div className="min-h-screen bg-black text-white flex">
+      {isDemoMode && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-orange-500/90 text-white px-4 py-2 flex items-center justify-between backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            <span className="font-medium">
+              Demo Mode Active: Viewing as {profile?.full_name || profile?.email || 'User'} (Read-Only)
+            </span>
+          </div>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={() => {
+              exitDemoMode();
+              navigate('/admin/users');
+            }}
+            className="bg-white/20 hover:bg-white/30 border-none text-white shadow-none"
+          >
+            Exit Demo Mode
+          </Button>
+        </div>
+      )}
+      
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 border-r border-white/10 bg-zinc-950/50 backdrop-blur-xl fixed h-full z-10">
         <div className="p-6 flex justify-start">
@@ -133,10 +175,10 @@ export const Layout = ({ children }: LayoutProps) => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 flex items-center justify-between">
           <Button 
             variant="ghost" 
-            className="w-full justify-start gap-3 text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+            className="justify-start gap-3 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 w-full"
             onClick={handleLogoutClick}
           >
             <LogOut className="w-5 h-5" />
@@ -151,9 +193,12 @@ export const Layout = ({ children }: LayoutProps) => {
           <img src="/logo.png" alt="Logo" className="w-6 h-6" />
           <h1 className="text-lg font-bold">Content Circle</h1>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X /> : <Menu />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <NotificationBell placement="bottom" />
+          <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X /> : <Menu />}
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -197,45 +242,59 @@ export const Layout = ({ children }: LayoutProps) => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 min-h-screen overflow-x-hidden">
+      <main className={cn(
+        "flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-6 min-h-screen overflow-x-hidden flex flex-col",
+        isDemoMode && "mt-12",
+        isSupportPage && "p-0 md:p-0 pt-16 md:pt-0"
+      )}>
+        {/* Desktop Top Bar */}
+        {!isSupportPage && (
+          <div className="hidden md:flex justify-end max-w-7xl mx-auto w-full mb-6 relative z-50">
+            <NotificationBell placement="bottom" />
+          </div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="max-w-7xl mx-auto space-y-8"
+          className={cn("w-full", !isSupportPage ? "max-w-7xl mx-auto space-y-8" : "h-[calc(100vh-4rem)] md:h-screen")}
         >
           {children}
         </motion.div>
       </main>
 
       {/* Logout Confirmation Modal */}
-      <AnimatePresence>
-        {isLogoutModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-sm"
-            >
-              <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader>
-                  <CardTitle>Sign Out?</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-zinc-400 mb-6">
-                    Are you sure you want to sign out of your account?
-                  </p>
-                  <div className="flex justify-end gap-3">
-                    <Button variant="ghost" onClick={() => setIsLogoutModalOpen(false)}>Cancel</Button>
-                    <Button variant="danger" onClick={confirmLogout}>Sign Out</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setIsLogoutModalOpen(false)}>
+          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-2">Sign Out?</h3>
+              <p className="text-zinc-400 mb-6">
+                Are you sure you want to sign out of your account?
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsLogoutModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl font-medium text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmLogout}
+                  className="px-5 py-2.5 rounded-xl font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
+      
+      {!isSupportPage && <SupportChatWidget />}
     </div>
   );
 };

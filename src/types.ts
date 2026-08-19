@@ -92,6 +92,20 @@ export interface Collaboration {
   inspiration_links: string;
   notes: string;
 
+  partner_id?: string;
+  collab_type?: 'brand' | 'influencer';
+  partner_status?: 'pending' | 'accepted' | 'declined' | null;
+  partner?: {
+    username: string;
+    full_name: string;
+    avatar_url: string | null;
+  };
+  sender?: {
+    username: string;
+    full_name: string;
+    avatar_url: string | null;
+  };
+
   timeline: CollaborationTimeline[];
 
   created_at: string;

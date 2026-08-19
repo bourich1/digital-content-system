@@ -4,7 +4,6 @@ import { Play, Pause, RotateCcw, Plus, Check, Circle, CheckCircle2, Trash2, List
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
-import ReactPlayer from 'react-player';
 
 interface Task {
   id: string;
@@ -18,9 +17,9 @@ type WidgetId = 'timer' | 'tasks';
 const PRESETS = [15, 25, 45];
 
 const DEFAULT_SOUNDS = {
-  quran: 'https://backup.qurango.net/radio/mishary_alafasi',
-  instru: 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3',
-  nature: 'https://cdn.pixabay.com/audio/2021/09/06/audio_3f76906a64.mp3',
+  quran: 'https://server8.mp3quran.net/afs/002.mp3', // Surah Al-Baqarah (stable MP3)
+  instru: 'https://stream.zeno.fm/f3wvbbqmdg8uv', // Lofi Radio stream (very stable)
+  nature: 'https://actions.google.com/sounds/v1/water/rain_drops_on_roof.ogg', // Rain (Google sounds)
 };
 
 export default function FocusRoom() {
@@ -51,6 +50,7 @@ export default function FocusRoom() {
   const [dragOverWidget, setDragOverWidget] = useState<WidgetId | null>(null);
 
   const bellRef = useRef<HTMLAudioElement>(null);
+  const ambientAudioRef = useRef<HTMLAudioElement>(null);
   
   // Ambient Sound
   const [customSounds, setCustomSounds] = useState(() => {
@@ -67,6 +67,22 @@ export default function FocusRoom() {
     { id: 'instru', label: 'Instrumental', icon: Music, src: customSounds.instru },
     { id: 'nature', label: 'Nature', icon: CloudRain, src: customSounds.nature },
   ];
+
+  useEffect(() => {
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    if (ambientAudioRef.current) {
+      if (activeSound !== 'none') {
+        ambientAudioRef.current.play().catch(e => console.log('Audio error:', e));
+      } else {
+        ambientAudioRef.current.pause();
+      }
+    }
+  }, [activeSound, customSounds]);
 
   // ── Persist widget order ──
   useEffect(() => {
@@ -622,23 +638,11 @@ export default function FocusRoom() {
       )}
 
       <audio ref={bellRef} src="https://cdn.pixabay.com/audio/2021/08/09/audio_a16175eab3.mp3" />
-      {activeSound !== 'none' && (
-        <div className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden">
-          <ReactPlayer 
-            url={AMBIENT_SOUNDS.find(s => s.id === activeSound)?.src} 
-            playing={true}
-            loop={true}
-            volume={volume}
-            width="10"
-            height="10"
-            config={{
-              youtube: {
-                playerVars: { showinfo: 0, autoplay: 1 }
-              }
-            }}
-          />
-        </div>
-      )}
+      <audio 
+        ref={ambientAudioRef} 
+        src={activeSound !== 'none' ? AMBIENT_SOUNDS.find(s => s.id === activeSound)?.src : ''} 
+        loop 
+      />
 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">

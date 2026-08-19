@@ -13,7 +13,7 @@ export const Badge = ({ children, className, variant = 'default', status }: Badg
   const statusStyles: Record<IdeaStatus, string> = {
     Idea: "bg-zinc-800 text-zinc-300 border-zinc-700",
     Script: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    Filmed: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    Filmed: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     Edited: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     Ready: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     Posted: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",

@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, ExternalLink, Image as ImageIcon, Loader2, Trash2, Search, Link as LinkIcon } from 'lucide-react';
+import { Plus, ExternalLink, Image as ImageIcon, Loader2, Trash2, Search, Link as LinkIcon, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '@/lib/supabase';
 import { Tool, ToolCategory } from '@/types';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 const CATEGORIES: ToolCategory[] = [
   'Video Editing', 'Development', 'Design', 'AI Tools', 'Gaming', 'Extensions', 'Other'
 ];
 
 export default function Tools() {
+  const { profile } = useAuth();
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
   const [fetchingInfo, setFetchingInfo] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ToolCategory | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [pageEnabled, setPageEnabled] = useState(true);
+  const [hasAccess, setHasAccess] = useState(true);
 
   const [newTool, setNewTool] = useState<Partial<Tool>>({
     name: '',
@@ -25,25 +32,48 @@ export default function Tools() {
     category: 'Other'
   });
 
+  const isAdmin = profile?.role === 'admin';
+
   useEffect(() => {
-    fetchTools();
-  }, []);
+    checkAccessAndFetch();
+  }, [profile]);
 
-  const fetchTools = async () => {
+  const checkAccessAndFetch = async () => {
+    if (!profile) return;
+    setLoading(true);
+
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return;
+      // 1. Check global settings
+      const { data: settingsData } = await supabase
+        .from('platform_settings')
+        .select('setting_value')
+        .eq('id', 'tools_page')
+        .single();
+        
+      const isGlobalEnabled = settingsData?.setting_value?.enabled ?? true;
+      setPageEnabled(isGlobalEnabled);
 
+      // 2. Check user permissions
+      const userCanAccess = profile.can_access_tools !== false;
+      setHasAccess(userCanAccess);
+
+      // If user is not admin and (globally disabled or personally blocked), stop fetching.
+      if (!isAdmin && (!isGlobalEnabled || !userCanAccess)) {
+        setLoading(false);
+        return;
+      }
+
+      // 3. Fetch ALL tools (global)
       const { data, error } = await supabase
         .from('tools')
         .select('*')
-        .eq('user_id', userData.user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setTools(data || []);
     } catch (error: any) {
-      toast.error('Failed to fetch tools: ' + error.message);
+      console.error('Failed to load tools:', error);
+      toast.error('Failed to fetch tools.');
     } finally {
       setLoading(false);
     }
@@ -57,7 +87,6 @@ export default function Tools() {
 
     setFetchingInfo(true);
     try {
-      // Ensure the URL has a protocol
       let urlToFetch = newTool.url;
       if (!/^https?:\/\//i.test(urlToFetch)) {
         urlToFetch = 'https://' + urlToFetch;
@@ -89,17 +118,16 @@ export default function Tools() {
 
   const handleAddTool = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) return;
+
     if (!newTool.name || !newTool.url) {
       toast.error('Please fill in at least the name and URL');
       return;
     }
 
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
-
       const toolData = {
-        user_id: userData.user.id,
+        user_id: profile.id, // recorded as the admin who added it
         name: newTool.name,
         url: newTool.url,
         description: newTool.description,
@@ -124,8 +152,16 @@ export default function Tools() {
     }
   };
 
-  const handleDeleteTool = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this tool?')) return;
+  const handleDeleteTool = (id: string) => {
+    if (!isAdmin) return;
+    setConfirmModal({ isOpen: true, id });
+  };
+
+  const executeDeleteTool = async () => {
+    const id = confirmModal.id;
+    if (!id || !isAdmin) return;
+    
+    setConfirmModal({ isOpen: false, id: null });
 
     try {
       const { error } = await supabase
@@ -142,6 +178,35 @@ export default function Tools() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+      </div>
+    );
+  }
+
+  // Access control views
+  if (!isAdmin && !pageEnabled) {
+    return (
+      <div className="h-[60vh] flex flex-col items-center justify-center text-center">
+        <ShieldAlert className="w-16 h-16 text-zinc-500 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Tools Unavailable</h2>
+        <p className="text-zinc-400">The tools page has been temporarily disabled by the administrator.</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin && !hasAccess) {
+    return (
+      <div className="h-[60vh] flex flex-col items-center justify-center text-center">
+        <ShieldAlert className="w-16 h-16 text-red-500/50 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+        <p className="text-zinc-400">You do not have permission to view the tools page.</p>
+      </div>
+    );
+  }
+
   const filteredTools = tools.filter(tool => {
     const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
     const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -156,21 +221,23 @@ export default function Tools() {
           <h1 className="text-3xl font-bold tracking-tight">Help Tools</h1>
           <p className="text-zinc-400 mt-1">Manage and organize your useful resources and tools.</p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-200 transition-colors flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Add Tool
-        </button>
+        
+        {isAdmin && (
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-200 transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Add Tool
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-zinc-900/50 p-4 rounded-xl border border-white/5">
         <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 sm:pb-0 hide-scrollbar">
           <button
             onClick={() => setSelectedCategory('All')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === 'All' ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
-              }`}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === 'All' ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'}`}
           >
             All
           </button>
@@ -178,8 +245,7 @@ export default function Tools() {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
-                }`}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'}`}
             >
               {category}
             </button>
@@ -198,11 +264,7 @@ export default function Tools() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
-        </div>
-      ) : filteredTools.length === 0 ? (
+      {filteredTools.length === 0 ? (
         <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-12 text-center">
           <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <LinkIcon className="w-8 h-8 text-zinc-400" />
@@ -211,9 +273,9 @@ export default function Tools() {
           <p className="text-zinc-400 max-w-sm mx-auto mb-6">
             {searchQuery || selectedCategory !== 'All'
               ? 'No tools match your current filters. Try adjusting your search or category.'
-              : 'Keep all your important tools and resources in one place. Add your first tool to get started.'}
+              : 'No tools have been added yet.'}
           </p>
-          {!(searchQuery || selectedCategory !== 'All') && (
+          {isAdmin && !(searchQuery || selectedCategory !== 'All') && (
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="bg-white/10 text-white px-4 py-2 rounded-lg font-medium hover:bg-white/20 transition-colors"
@@ -231,13 +293,15 @@ export default function Tools() {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-zinc-900/50 border border-white/10 rounded-xl p-5 hover:border-white/20 transition-colors group relative flex flex-col h-full"
             >
-              <button
-                onClick={() => handleDeleteTool(tool.id)}
-                className="absolute top-4 right-4 text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Delete Tool"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => handleDeleteTool(tool.id)}
+                  className="absolute top-4 right-4 text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete Tool"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
 
               <div className="flex items-start gap-4 mb-3">
                 <div className="w-12 h-12 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden border border-white/5">
@@ -275,7 +339,7 @@ export default function Tools() {
 
       {/* Add Tool Modal */}
       <AnimatePresence>
-        {isAddModalOpen && (
+        {isAddModalOpen && isAdmin && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -384,6 +448,15 @@ export default function Tools() {
           </div>
         )}
       </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, id: null })}
+        onConfirm={executeDeleteTool}
+        title="Delete Tool"
+        message="Are you sure you want to delete this tool? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 }
