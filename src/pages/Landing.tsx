@@ -192,31 +192,40 @@ export default function Landing() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs sm:text-sm font-medium text-orange-400 mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs sm:text-sm font-medium text-orange-400 mb-6"
           >
             <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-            BoostD — Your Content Management Platform
+            Official Application • BoostD
           </motion.div>
           
+          {/* Main Visible Application Name Heading */}
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-8 leading-[1.1]"
+            className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 text-white"
           >
-            Organize, Manage, and Grow <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500">
-              Your Digital Content.
-            </span>
+            BoostD
           </motion.h1>
+
+          {/* Subtitle Describing Product */}
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500"
+          >
+            Your Content Management &amp; Productivity Platform
+          </motion.h2>
           
+          {/* Factual Purpose & Problem-Solving Paragraph */}
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-zinc-300 max-w-3xl mx-auto mb-10 leading-relaxed"
+            className="text-base sm:text-lg md:text-xl text-zinc-300 max-w-3xl mx-auto mb-10 leading-relaxed"
           >
-            <strong className="text-white font-semibold">BoostD</strong> helps creators, social media managers, and teams organize, manage, and scale their digital content from one centralized workspace — uniting ideas, editorial calendars, tasks, deep work focus, and brand collaborations.
+            <strong className="text-white font-semibold">BoostD</strong> is an all-in-one content management platform built for creators, social media managers, and teams to organize, manage, and grow their digital content. BoostD eliminates scattered tools by bringing content idea brainstorming, visual editorial calendar scheduling, task execution, deep work focus sessions, and brand sponsorship tracking into one centralized workspace.
           </motion.p>
           
           <motion.div 
