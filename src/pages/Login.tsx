@@ -2,6 +2,7 @@ import PublicNavbar from '@/components/PublicNavbar';
 import {usePublicTheme} from '@/hooks/usePublicTheme';
 import './Login.css';
 import SocialOrbit from '@/components/SocialOrbit';
+import TurnstileCaptcha from '@/components/TurnstileCaptcha';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -26,6 +27,10 @@ export default function Login() {
   const [isLoadingEmail, setIsLoadingEmail] = useState(false);
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaReset, setCaptchaReset] = useState(0);
+  const captchaSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim() || '';
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,19 +62,36 @@ export default function Login() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (captchaSiteKey && !captchaToken) {
+      setError('Please complete the security verification first.');
+      return;
+    }
     setIsLoadingEmail(true);
     setError('');
+    setNotice('');
 
     try {
+      const options = captchaSiteKey ? { captchaToken } : undefined;
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({ email, password, options });
+        if (error) throw error;
+        if (data.session) navigate('/');
+        else setNotice('Check your email to confirm your account, then come back to sign in.');
+        return;
+      }
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options,
       });
       if (error) throw error;
       navigate('/');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
+    } finally {
       setIsLoadingEmail(false);
+      setCaptchaToken('');
+      setCaptchaReset(value => value + 1);
     }
   };
 
@@ -119,6 +141,7 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSignIn} className="space-y-5">
+            {notice && <p role="status" className="rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm text-green-500">{notice}</p>}
             <div className="space-y-4">
               <Input 
                 label="Email" 
@@ -161,8 +184,17 @@ export default function Login() {
               </div>
             )}
 
+            {captchaSiteKey && <TurnstileCaptcha
+              siteKey={captchaSiteKey}
+              theme={theme}
+              action={isSignUp ? 'signup' : 'login'}
+              resetKey={captchaReset}
+              onToken={setCaptchaToken}
+            />}
+
             <Button 
               type="submit" 
+              disabled={isLoadingEmail || Boolean(captchaSiteKey && !captchaToken)}
               className="w-full bg-orange-600 hover:bg-orange-500 text-white py-6 text-lg font-semibold rounded-xl shadow-lg shadow-orange-600/20" 
               isLoading={isLoadingEmail}
             >
@@ -196,7 +228,7 @@ export default function Login() {
             <div className="text-center mt-6">
               <button
                 type="button"
-                onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
+                onClick={() => { setIsSignUp(!isSignUp); setError(''); setNotice(''); setCaptchaToken(''); }}
                 className="text-zinc-400 hover:text-white transition-colors text-sm"
               >
                 {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
