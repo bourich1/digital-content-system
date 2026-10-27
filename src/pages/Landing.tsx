@@ -169,7 +169,7 @@ const features = [
           <div className="hero-float hero-task" aria-hidden="true"><CheckCircle2 size={26} /><div><strong>Your next great video</strong><span>From idea to published</span></div><span className="task-check">✓</span></div>
           <div className="hero-mark" aria-hidden="true"><img src={`/icon ${brandVariant}.png`} alt="" /></div>
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs sm:text-sm font-medium text-orange-400 mb-6"
@@ -180,7 +180,7 @@ const features = [
           
           {/* Main Visible Application Name Heading */}
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4 text-white"
@@ -190,7 +190,7 @@ const features = [
 
           {/* Subtitle Describing Product */}
           <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
             className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500"
@@ -200,7 +200,7 @@ const features = [
           
           {/* Factual Purpose & Problem-Solving Paragraph */}
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-base sm:text-lg md:text-xl text-zinc-300 max-w-3xl mx-auto mb-10 leading-relaxed"
@@ -209,7 +209,7 @@ const features = [
           </motion.p>
           
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
@@ -232,7 +232,7 @@ const features = [
 
           {/* Quick Trust Highlights */}
           <motion.div 
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm text-zinc-400"
