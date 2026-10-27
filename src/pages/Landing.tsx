@@ -1,3 +1,7 @@
+import CreativeCTA from '@/components/CreativeCTA';
+import LandingFooter from '@/components/LandingFooter';
+import ScrollStack, { ScrollStackItem } from '@/components/ui/ScrollStack';
+import { GradientCard } from '@/components/ui/gradient-card';
 import PublicNavbar from '@/components/PublicNavbar';
 import {usePublicTheme} from '@/hooks/usePublicTheme';
 import WorkflowBeam from '@/components/WorkflowBeam';
@@ -8,7 +12,7 @@ import './Landing.css';
 import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Button } from '@/components/ui/Button';
+import { BoostDShinyAction } from '@/components/ui/boostd-shiny-action';
 import { 
   Brain, 
   CheckCircle2, 
@@ -159,7 +163,7 @@ const features = [
         <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[120px]" />
       </div>
 
-      <PublicNavbar theme={theme} onToggle={toggleTheme}/>
+      <PublicNavbar theme={theme} onToggle={toggleTheme} enhancedActions/>
 
       <main className="relative z-10 pt-28">
         {/* HERO SECTION */}
@@ -167,7 +171,7 @@ const features = [
           <div className="hero-float hero-note" aria-hidden="true"><span className="note-pin" /><Brain size={24} /><p>Big ideas start<br />with a little space.</p><span>Capture it. Create it.</span></div>
           <div className="hero-float hero-focus" aria-hidden="true"><Target size={26} /><span>Time to make it happen</span><strong>25:00</strong><small>Focus Room · Deep work</small><div className="focus-progress" /></div>
           <div className="hero-float hero-task" aria-hidden="true"><CheckCircle2 size={26} /><div><strong>Your next great video</strong><span>From idea to published</span></div><span className="task-check">✓</span></div>
-          <div className="hero-mark" aria-hidden="true"><img src={`/icon ${brandVariant}.png`} alt="" /></div>
+          <div className="hero-mark" aria-hidden="true"><img src={`/icon ${brandVariant}.png`} alt="" width="410" height="189" /></div>
           <motion.div
             initial={false}
             animate={{ opacity: 1, y: 0 }}
@@ -214,20 +218,8 @@ const features = [
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
           >
-            <Button 
-              onClick={() => navigate('/login?signup=true')}
-              className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-xl shadow-orange-500/25 border-0 cursor-pointer"
-            >
-              Get Started for Free
-              <ChevronRight className="ml-2 w-5 h-5" />
-            </Button>
-            <Button 
-              onClick={() => navigate('/login')}
-              variant="outline"
-              className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-zinc-900/80 border-zinc-700 hover:bg-zinc-800 cursor-pointer text-white"
-            >
-              Sign In to Account
-            </Button>
+            <BoostDShinyAction onClick={() => navigate('/login?signup=true')}>Get Started for Free<ChevronRight size={16}/></BoostDShinyAction>
+            <BoostDShinyAction tone="secondary" onClick={() => navigate('/login')}>Sign In to Account</BoostDShinyAction>
           </motion.div>
 
           {/* Quick Trust Highlights */}
@@ -295,151 +287,27 @@ const features = [
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ScrollStack className="audience-stack" useWindowScroll smoothScroll={false}
+            itemDistance={90} itemStackDistance={18} stackPosition="90px"
+            itemScale={0.035} baseScale={0.88} dimAmount={0.1} holdDistance={100}>
             {targetAudiences.map((audience, index) => (
-              <motion.div
-                key={audience.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-7 flex flex-col justify-between hover:border-zinc-700 transition-colors"
-              >
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0">
-                      {audience.icon}
-                    </div>
-                    <h3 className="text-lg font-bold text-white">{audience.title}</h3>
-                  </div>
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-5">
-                    {audience.description}
-                  </p>
-                </div>
-                <div className="space-y-2 pt-4 border-t border-zinc-900">
-                  {audience.points.map((pt) => (
-                    <div key={pt} className="flex items-center gap-2 text-xs text-zinc-300">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
-                      <span>{pt}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+              <ScrollStackItem key={audience.title} itemClassName="audience-stack-item">
+                <GradientCard badgeText={['MAKE YOUR NEXT BIG THING', 'KEEP EVERY CHANNEL IN SYNC', 'YOUR WORK. YOUR RHYTHM.', 'CREATE BETTER, TOGETHER'][index]}
+                  title={audience.title} description={audience.description} points={audience.points}
+                  icon={audience.icon} number={index + 1}
+                  imageUrl={`/images/about/${['ideas','planning','focus','collaborations'][index]}-v1.webp`}
+                  ctaText="Find your creative flow" ctaHref="/login?signup=true" />
+              </ScrollStackItem>
             ))}
-          </div>
+          </ScrollStack>
         </section>
 
-        {/* SECURITY & GOOGLE OAUTH TRANSPARENCY SECTION */}
-        <section className="container mx-auto px-6 max-w-5xl py-16 border-t border-zinc-900">
-          <div className="bg-zinc-950/80 border border-zinc-800 rounded-3xl p-8 sm:p-10">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="space-y-2 max-w-2xl">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-400">
-                  <Shield className="w-4 h-4" />
-                  Privacy, Security & Compliance
-                </div>
-                <h3 className="text-2xl font-bold text-white">
-                  Built with transparency and user trust at the core
-                </h3>
-                <p className="text-zinc-400 text-sm leading-relaxed">
-                  BoostD adheres to Google OAuth API Services User Data Policies and strict privacy standards. We only use your authentication credentials to provide your secure personal workspace, and never share or sell your data.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <Link 
-                  to="/privacy" 
-                  className="inline-flex items-center justify-center text-sm font-medium px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-                <Link 
-                  to="/terms" 
-                  className="inline-flex items-center justify-center text-sm font-medium px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* FINAL CTA SECTION */}
-        <section className="container mx-auto px-6 max-w-5xl py-20 text-center">
-          <div className="bg-gradient-to-b from-orange-500/10 via-zinc-950 to-zinc-950 border border-orange-500/20 rounded-3xl p-10 sm:p-14">
-            <h2 className="text-3xl sm:text-5xl font-extrabold mb-6 tracking-tight text-white">
-              Ready to organize your content with BoostD?
-            </h2>
-            <p className="text-zinc-300 text-base sm:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-              Join creators and teams using BoostD to plan, track, and scale their digital content in one centralized platform.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button 
-                onClick={() => navigate('/login?signup=true')}
-                className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-lg shadow-orange-500/25 border-0 cursor-pointer"
-              >
-                Get Started Free
-                <ChevronRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button 
-                onClick={() => navigate('/login')}
-                variant="outline"
-                className="w-full sm:w-auto text-base px-8 py-6 rounded-full bg-zinc-900 border-zinc-700 hover:bg-zinc-800 text-white cursor-pointer"
-              >
-                Sign In
-              </Button>
-            </div>
-          </div>
-        </section>
+
+        <CreativeCTA theme={theme} />
       </main>
 
-      {/* FOOTER */}
-      <footer className="border-t border-zinc-900 bg-black py-14 relative z-10">
-        <div className="container mx-auto px-6 max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <div className="space-y-4 md:col-span-2">
-              <div className="flex items-center gap-3">
-                <img src={`/logo ${brandVariant}.png`} alt="BoostD" className="h-7 w-auto object-contain" />
-              </div>
-              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
-                BoostD is an all-in-one content management and creator productivity platform empowering creators, social media managers, and teams to organize ideas, schedule editorial calendars, manage tasks, and track brand collaborations.
-              </p>
-              <div className="text-xs text-zinc-500">
-                Official Website: <a href="https://www.boostd.app" className="text-orange-400 hover:underline">https://www.boostd.app</a>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Platform</h3>
-              <ul className="space-y-2.5 text-sm text-zinc-400">
-                <li><Link to="/login" className="hover:text-white transition-colors">Sign In / Register</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal & Support</h3>
-              <ul className="space-y-2.5 text-sm text-zinc-400">
-                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                <li><Link to="/support" className="hover:text-white transition-colors">Support Center</Link></li>
-                <li><a href="mailto:support@boostd.app" className="hover:text-white transition-colors">support@boostd.app</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-zinc-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-zinc-500">
-            <div>
-              © {new Date().getFullYear()} BoostD. All rights reserved.
-            </div>
-            <div className="flex items-center gap-6">
-              <Link to="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
-              <span>•</span>
-              <Link to="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
-              <span>•</span>
-              <a href="https://www.boostd.app" className="hover:text-zinc-300 transition-colors">boostd.app</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter theme={theme} />
     </div>
   );
 }

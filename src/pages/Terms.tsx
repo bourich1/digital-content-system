@@ -67,7 +67,7 @@ export default function Terms() {
               5. Contact Information
             </h2>
             <p className="text-zinc-300">
-              For questions regarding our terms, reach out at <a href="mailto:support@boostd.app" className="text-orange-400 hover:underline font-medium">support@boostd.app</a>.
+              For questions regarding our terms, reach out at <a href="mailto:officialboostd@gmail.com" className="text-orange-400 hover:underline font-medium">officialboostd@gmail.com</a>.
             </p>
           </section>
 

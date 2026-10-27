@@ -1,0 +1,38 @@
+@property --boostd-shiny-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+@property --boostd-shiny-offset{syntax:'<angle>';initial-value:0deg;inherits:false}
+@property --boostd-shiny-arc{syntax:'<percentage>';initial-value:5%;inherits:false}
+@property --boostd-shiny-shine{syntax:'<color>';initial-value:#ffe7d2;inherits:false}
+.landing-page .boostd-shiny-action{
+ --shiny-base:var(--card,#151518);--shiny-accent:var(--landing-accent,#f07832);--shiny-soft:#ffbc87;--shiny-duration:4s;
+ position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+ border:1px solid transparent;border-radius:999px;padding:14px 25px;min-height:49px;width:auto;height:auto;
+ font-family:inherit;font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;text-decoration:none;cursor:pointer;color:var(--ink);
+ background:linear-gradient(var(--shiny-base),var(--shiny-base)) padding-box,conic-gradient(from calc(var(--boostd-shiny-angle) - var(--boostd-shiny-offset)),transparent,var(--shiny-accent) var(--boostd-shiny-arc),var(--boostd-shiny-shine) calc(var(--boostd-shiny-arc)*2),var(--shiny-accent) calc(var(--boostd-shiny-arc)*3),transparent calc(var(--boostd-shiny-arc)*4)) border-box;
+ box-shadow:inset 0 0 0 1px var(--line),0 4px 18px #f078320c;
+ animation:boostd-shiny-turn var(--shiny-duration) linear infinite;
+ transition:--boostd-shiny-offset .8s cubic-bezier(.25,1,.5,1),--boostd-shiny-arc .8s cubic-bezier(.25,1,.5,1),--boostd-shiny-shine .8s,box-shadow .3s,translate .2s;
+}
+.landing-page .boostd-shiny-action::before,.landing-page .boostd-shiny-action::after,.boostd-shiny-content::before{content:'';position:absolute;left:50%;top:50%;translate:-50% -50%;z-index:-1;pointer-events:none}
+.landing-page .boostd-shiny-action::before{width:calc(100% - 6px);height:calc(100% - 6px);border-radius:inherit;background:radial-gradient(circle at 2px 2px,var(--shiny-accent) .5px,transparent 0);background-size:4px 4px;mask-image:conic-gradient(from calc(var(--boostd-shiny-angle) + 45deg),#000,transparent 10% 90%,#000);opacity:.22;animation:boostd-shiny-turn var(--shiny-duration) linear infinite}
+.landing-page .boostd-shiny-action::after{width:100%;aspect-ratio:1;background:linear-gradient(-50deg,transparent,var(--shiny-accent),transparent);mask-image:radial-gradient(circle at bottom,transparent 40%,#000);opacity:.2;animation:boostd-shiny-sheen calc(var(--shiny-duration)*1.7) linear infinite;transition:opacity .6s}
+.boostd-shiny-content{display:inline-flex;align-items:center;justify-content:center;gap:12px;position:relative;z-index:1}
+.boostd-shiny-content::before{width:calc(100% + 4rem);height:calc(100% + 3rem);border-radius:50%;box-shadow:inset 0 -12px 28px 4px var(--shiny-accent);opacity:0;transition:opacity .7s;animation:boostd-shiny-breathe 6s linear infinite}
+.boostd-shiny-content>svg{width:15px;height:15px;flex-shrink:0;transition:transform .3s}
+.landing-page .boostd-shiny-action:is(:hover,:focus-visible){--boostd-shiny-arc:20%;--boostd-shiny-offset:95deg;--boostd-shiny-shine:var(--shiny-soft);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line),0 5px 25px #f078321b}
+.landing-page .boostd-shiny-action:is(:hover,:focus-visible)::after{opacity:.42}
+.boostd-shiny-action:is(:hover,:focus-visible) .boostd-shiny-content::before{opacity:.45}
+.boostd-shiny-action:hover .boostd-shiny-content>svg{transform:translate(2px,-1px)}
+.landing-page .boostd-shiny-action:focus-visible{outline:2px solid var(--shiny-accent);outline-offset:4px}
+.landing-page .boostd-shiny-action:active{translate:0 1px}
+.landing-page .boostd-shiny-action.shiny-secondary{--shiny-duration:6s;color:var(--muted)}
+.landing-page .boostd-shiny-action.shiny-secondary::after{opacity:.1}
+.landing-page .boostd-shiny-action.shiny-secondary:is(:hover,:focus-visible){color:var(--ink)}
+.landing-page .boostd-shiny-action.shiny-small{font-size:10px;min-height:37px;padding:10px 17px}
+.landing-page .boostd-shiny-action.shiny-small .boostd-shiny-content{gap:8px}
+.landing-page .public-nav-actions .boostd-shiny-action{min-height:38px;padding:10px 17px;font-size:11px}
+@keyframes boostd-shiny-turn{to{--boostd-shiny-angle:360deg}}
+@keyframes boostd-shiny-sheen{to{rotate:360deg}}
+@keyframes boostd-shiny-breathe{0%,100%{scale:1}50%{scale:1.15}}
+@media(max-width:600px){.landing-page .public-nav-actions .boostd-shiny-action{min-height:32px;padding:8px 11px;font-size:9px}.landing-page .public-nav-actions .boostd-shiny-content{gap:5px}.landing-page .public-nav-actions .boostd-shiny-content>svg{width:12px;height:12px}}
+@media(max-width:450px){.landing-page .creative-cta-actions .boostd-shiny-action{padding:13px 17px;min-height:44px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){.landing-page .boostd-shiny-action,.landing-page .boostd-shiny-action::before,.landing-page .boostd-shiny-action::after,.boostd-shiny-content::before{animation:none!important}.landing-page .boostd-shiny-action,.boostd-shiny-content::before,.boostd-shiny-content>svg{transition:none}.boostd-shiny-action:hover .boostd-shiny-content>svg{transform:none}}
