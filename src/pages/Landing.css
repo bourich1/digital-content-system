@@ -85,13 +85,6 @@ body:has(.landing-page) { zoom: 1; }
 .landing-page footer a:hover { color:var(--landing-accent); }
 .landing-page[data-theme="dark"] #features > .grid > div { background:var(--surface); }
 .landing-page[data-theme="dark"] .hero-mark { background:linear-gradient(145deg,#30343c,#191b20); box-shadow:7px 10px 14px #0003,inset 1px 1px 2px #ffffff18; }
-.landing-page .appearance-controls { display:flex; align-items:center; gap:8px; padding:4px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
-.landing-page .theme-toggle { display:flex; align-items:center; justify-content:center; width:34px; height:34px; padding:0; color:var(--ink); border-radius:8px; cursor:pointer; }
-.landing-page .theme-toggle:hover { background:var(--card); }
-.accent-picker { display:flex; align-items:center; justify-content:center; width:34px; height:34px; cursor:pointer; }
-.accent-picker input { width:26px; height:26px; padding:0; border:0; background:transparent; cursor:pointer; }
-.accent-picker input::-webkit-color-swatch-wrapper { padding:2px; }
-.accent-picker input::-webkit-color-swatch { border:1px solid var(--line); border-radius:50%; }
 .landing-page :is(button,a,input):focus-visible { outline:2px solid var(--landing-accent); outline-offset:4px; }
 .landing-brand img { max-width:160px; }
 @media(max-width:600px) {

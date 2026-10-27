@@ -1,0 +1,13 @@
+.public-login .login-layout{min-height:calc(100svh - 76px);background:var(--page-bg)}
+.public-login .login-layout>div:first-child{padding-top:40px;padding-bottom:40px}
+.public-login .login-layout :is(.text-white,.text-zinc-200){color:var(--ink)}
+.public-login .login-layout :is(.text-zinc-300,.text-zinc-400,.text-zinc-500){color:var(--muted)}
+.public-login .login-layout :is(.bg-black,.bg-zinc-900){background:var(--page-bg)}
+.public-login .login-layout :is(.border-zinc-800,.border-gray-800){border-color:var(--line)}
+.public-login .login-layout input{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.public-login .login-layout input:focus{border-color:#f07832}
+.public-login .login-layout button[type=submit]{background:#f07832;color:#111}
+.public-login .login-layout button[type=button][class*=bg-]{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.public-login .login-layout>div:nth-child(2){background:var(--surface);border-color:var(--line)}
+.public-login .login-layout label{color:var(--ink)}
+@media(max-width:600px){.public-login .login-layout{min-height:calc(100svh - 108px)}.public-login .login-layout>div:first-child{padding:32px 22px}}

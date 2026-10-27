@@ -1,9 +1,11 @@
+import PublicNavbar from '@/components/PublicNavbar';
+import {usePublicTheme} from '@/hooks/usePublicTheme';
 import WorkflowBeam from '@/components/WorkflowBeam';
 import FeaturesBento from '@/components/FeaturesBento';
 import AboutBento from '@/components/AboutBento';
 import WorkspaceDemo from '@/components/WorkspaceDemo';
 import './Landing.css';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/Button';
@@ -27,23 +29,14 @@ import {
   Share2, 
   Briefcase, 
   Video, 
-  Layers, Sun, Moon
+  Layers
 } from 'lucide-react';
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    try { return localStorage.getItem('landing-theme') === 'dark' ? 'dark' : 'light'; }
-    catch { return 'light'; }
-  });
-  const [accent, setAccent] = useState(() => {
-    try {
-      const saved = localStorage.getItem('landing-accent');
-      return saved && /^#[0-9a-f]{6}$/i.test(saved) ? saved : '#f07832';
-    } catch { return '#f07832'; }
-  });
-  const brandVariant = theme === 'dark' ? 'white' : 'black';
+  const {theme,toggleTheme}=usePublicTheme();
+  const accent='#f07832';
+  const brandVariant=theme==='dark'?'white':'black';
   const channels = [1, 3, 5].map((start) => {
     const value = parseInt(accent.slice(start, start + 2), 16) / 255;
     return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
@@ -54,7 +47,7 @@ export default function Landing() {
   useEffect(() => {
     try {
       localStorage.setItem('landing-theme', theme);
-      localStorage.setItem('landing-accent', accent);
+
     } catch { /* Appearance still works when storage is unavailable. */ }
     const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     const previous = favicon?.getAttribute('href');
@@ -64,15 +57,7 @@ export default function Landing() {
     };
   }, [theme, accent, brandVariant]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const features = [
+const features = [
     {
       title: "Content Idea Management",
       description: "Capture, organize, and prioritize your content concepts in one centralized hub. Tag ideas by social platform (YouTube, Instagram, TikTok, X, LinkedIn) and status.",
@@ -174,47 +159,7 @@ export default function Landing() {
         <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[120px]" />
       </div>
 
-      {/* Navbar */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-xl border-b border-zinc-800/80 py-4' : 'bg-transparent py-6'}`}>
-        <div className="container mx-auto px-6 max-w-6xl flex items-center justify-between">
-          <div className="landing-brand flex items-center gap-3">
-            <img src={`/logo ${brandVariant}.png`} alt="BoostD" className="h-8 w-auto object-contain" />
-          </div>
-          
-          <nav className="hidden md:flex items-center gap-8">
-            <Link to="/privacy" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-              Privacy
-            </Link>
-            <Link to="/terms" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-              Terms
-            </Link>
-          </nav>
-
-          <div className="landing-actions flex items-center gap-3">
-            <div className="appearance-controls" role="group" aria-label="Page appearance">
-              <button type="button" className="theme-toggle" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
-                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-              </button>
-              <label className="accent-picker" title="Choose accent color">
-                <span className="sr-only">Choose accent color</span>
-                <input type="color" value={accent} onChange={(event) => setAccent(event.target.value)} aria-label="Choose accent color" />
-              </label>
-            </div>
-            <button 
-              onClick={() => navigate('/login')}
-              className="text-sm font-medium text-zinc-300 hover:text-white transition-colors px-3 py-2 cursor-pointer"
-            >
-              Sign In
-            </button>
-            <Button 
-              onClick={() => navigate('/login?signup=true')}
-              className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-5 text-sm font-semibold shadow-lg shadow-orange-500/20 border-0 cursor-pointer"
-            >
-              Get Started
-            </Button>
-          </div>
-        </div>
-      </header>
+      <PublicNavbar theme={theme} onToggle={toggleTheme}/>
 
       <main className="relative z-10 pt-28">
         {/* HERO SECTION */}

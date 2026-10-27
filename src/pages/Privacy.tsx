@@ -1,66 +1,14 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Shield, ArrowLeft, Lock, Eye, Database, Bell, RefreshCw, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import LegalPage from '@/components/LegalPage';
 
 export default function Privacy() {
-  const navigate = useNavigate();
+ return <LegalPage kind="privacy" sections={["Overview & Commitment","Information We Collect","Google User Data & Limited Use Policy","How We Use Your Information","Data Security & Retention","Your Rights & Data Deletion","Contact Us"]}>
 
-  return (
-    <div className="min-h-screen bg-black text-white selection:bg-orange-500 selection:text-white font-sans">
-      {/* Background glow */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/10 rounded-full blur-[140px]" />
-      </div>
-
-      {/* Navigation Bar */}
-      <header className="border-b border-zinc-800/80 backdrop-blur-md bg-black/60 sticky top-0 z-50">
-        <div className="container mx-auto px-6 max-w-5xl h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <img src="/logo white.png" alt="BoostD" className="h-7 w-auto object-contain " />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="border-zinc-800 hover:bg-zinc-900 text-zinc-300 gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => navigate('/login')}
-              className="bg-orange-600 hover:bg-orange-500 text-white shadow-md shadow-orange-600/20"
-            >
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-6 max-w-4xl py-14 relative z-10">
-        {/* Header Title */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 mb-4">
-            <Shield className="w-8 h-8" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
-            Privacy Policy
-          </h1>
-          <p className="text-zinc-400 text-base max-w-xl mx-auto">
-            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-          </p>
-        </div>
-
-        {/* Content Box */}
-        <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-3xl p-8 md:p-12 space-y-10 shadow-2xl backdrop-blur-sm leading-relaxed">
           
           {/* Summary / Introduction */}
-          <section className="space-y-4">
+          <section id="privacy-1" className="space-y-4">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <Eye className="w-6 h-6 text-orange-500" />
               1. Overview & Commitment
@@ -78,7 +26,7 @@ export default function Privacy() {
           <hr className="border-zinc-800/80" />
 
           {/* Information We Collect */}
-          <section className="space-y-4">
+          <section id="privacy-2" className="space-y-4">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <Database className="w-6 h-6 text-orange-500" />
               2. Information We Collect
@@ -97,7 +45,7 @@ export default function Privacy() {
           <hr className="border-zinc-800/80" />
 
           {/* Google API & OAuth User Data Disclosure */}
-          <section className="space-y-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl p-6">
+          <section id="privacy-3" className="space-y-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl p-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-3 text-orange-400">
               <Lock className="w-5 h-5 text-orange-400" />
               3. Google User Data & Limited Use Policy
@@ -124,7 +72,7 @@ export default function Privacy() {
           <hr className="border-zinc-800/80" />
 
           {/* How We Use Your Data */}
-          <section className="space-y-4">
+          <section id="privacy-4" className="space-y-4">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <RefreshCw className="w-6 h-6 text-orange-500" />
               4. How We Use Your Information
@@ -141,7 +89,7 @@ export default function Privacy() {
           <hr className="border-zinc-800/80" />
 
           {/* Data Security & Storage */}
-          <section className="space-y-4">
+          <section id="privacy-5" className="space-y-4">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <Shield className="w-6 h-6 text-orange-500" />
               5. Data Security & Retention
@@ -159,7 +107,7 @@ export default function Privacy() {
           <hr className="border-zinc-800/80" />
 
           {/* Your Rights & Deletion */}
-          <section className="space-y-4">
+          <section id="privacy-6" className="space-y-4">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <Bell className="w-6 h-6 text-orange-500" />
               6. Your Rights & Data Deletion
@@ -180,7 +128,7 @@ export default function Privacy() {
           <hr className="border-zinc-800/80" />
 
           {/* Contact Us */}
-          <section className="space-y-4">
+          <section id="privacy-7" className="space-y-4">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
               <Mail className="w-6 h-6 text-orange-500" />
               7. Contact Us
@@ -196,17 +144,6 @@ export default function Privacy() {
             </div>
           </section>
 
-        </div>
 
-        {/* Footer Navigation */}
-        <div className="mt-12 text-center text-zinc-500 text-sm space-x-6">
-          <Link to="/" className="hover:text-zinc-300 transition-colors">Home</Link>
-          <span>•</span>
-          <Link to="/privacy" className="text-white font-medium">Privacy Policy</Link>
-          <span>•</span>
-          <Link to="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
-        </div>
-      </main>
-    </div>
-  );
+ </LegalPage>;
 }

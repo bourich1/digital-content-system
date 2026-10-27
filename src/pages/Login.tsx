@@ -1,3 +1,6 @@
+import PublicNavbar from '@/components/PublicNavbar';
+import {usePublicTheme} from '@/hooks/usePublicTheme';
+import './Login.css';
 import SocialOrbit from '@/components/SocialOrbit';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -11,6 +14,7 @@ import {
 } from 'lucide-react';
 
 export default function Login() {
+  const {theme,toggleTheme}=usePublicTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,9 +30,7 @@ export default function Login() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get('signup') === 'true') {
-      setIsSignUp(true);
-    }
+    setIsSignUp(params.get('signup') === 'true');
   }, [location.search]);
 
   useEffect(() => {
@@ -90,14 +92,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex w-full overflow-hidden font-sans">
+    <div className="public-page public-login" data-theme={theme}><PublicNavbar theme={theme} onToggle={toggleTheme}/><main className="login-layout flex w-full overflow-hidden font-sans">
       
       {/* Left Column - Authentication Form */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-12 z-10 relative">
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <img src="/logo white.png" alt="BoostD" className="h-12 w-auto object-contain " />
+            <img src={`/logo ${theme === 'dark' ? 'white' : 'black'}.png`} alt="BoostD" className="h-12 w-auto object-contain " />
           </div>
 
           <div className="text-center mb-8">
@@ -241,6 +243,6 @@ export default function Login() {
         </div>
       </div>
 
-    </div>
+    </main></div>
   );
 }
