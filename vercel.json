@@ -1,6 +1,9 @@
 {
   "rewrites": [
     { "source": "/api/creator-profile", "destination": "/api/creator-profile" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/login", "destination": "/login.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

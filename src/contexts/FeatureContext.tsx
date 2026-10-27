@@ -13,10 +13,18 @@ const FeatureContext = createContext<FeatureContextType>({
 });
 
 export const FeatureProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { session } = useAuth();
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Public pages do not consume workspace feature flags or need a Realtime socket.
+    if (!session) {
+      setFeatures({});
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     fetchFeatures();
 
     // Subscribe to realtime changes
@@ -35,7 +43,7 @@ export const FeatureProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [session?.user.id]);
 
   const fetchFeatures = async () => {
     try {

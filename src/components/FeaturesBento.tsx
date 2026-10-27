@@ -1,7 +1,7 @@
 import React from 'react';
 import { Lightbulb, CalendarDays, ListChecks, Timer, Handshake, Sparkles, Check, Image, FileText, Scissors } from 'lucide-react';
 import { BentoCard, BentoGrid } from '@/components/ui/bento-grid';
-const art=(name:string)=><img src={`/images/about/${name}-v1.png`} alt="" loading="lazy" decoding="async"/>;
+const art=(name:string)=><img src={`/images/about/${name}-v1.webp`} alt="" loading="lazy" decoding="async" width="1000" height="667"/>;
 const capabilities=[
  {name:'Content Idea Management',description:'Capture inspiration, shape your scripts and track every idea from first spark to published story.',Icon:Lightbulb,href:'/ideas',cta:'Explore content ideas',className:'capability-ideas',background:art('ideas')},
  {name:'Editorial Calendar',description:'Keep publishing dates and upcoming collaborations in view.',Icon:CalendarDays,href:'/calendar',cta:'Open the calendar',className:'capability-calendar',background:art('planning')},

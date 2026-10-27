@@ -1,35 +1,36 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
+import PageMetadata from '@/components/PageMetadata';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CornerRightDown } from 'lucide-react';
 import { Toaster } from 'sonner';
-import { Layout } from '@/components/Layout';
-import { AdminLayout } from '@/components/AdminLayout';
-import Dashboard from '@/pages/Dashboard';
-import Login from '@/pages/Login';
-import Landing from '@/pages/Landing';
-import Creators from '@/pages/Creators';
-import ContentIdeas from '@/pages/ContentIdeas';
-import Settings from '@/pages/Settings';
-import AccountSettings from '@/pages/AccountSettings';
-import SecuritySettings from '@/pages/SecuritySettings';
-import SettingsShell from '@/components/SettingsShell';
-import SharedProfile from '@/pages/SharedProfile';
-import Collaborations from '@/pages/Collaborations';
-import Tasks from '@/pages/Tasks';
-import FocusRoom from '@/pages/FocusRoom';
-import Calendar from '@/pages/Calendar';
-import Tools from '@/pages/Tools';
-import Onboarding from '@/pages/Onboarding';
-import AdminDashboard from '@/pages/AdminDashboard';
-import Analytics from '@/pages/admin/Analytics';
-import Users from '@/pages/admin/Users';
-import Moderation from '@/pages/admin/Moderation';
-import Surveys from '@/pages/admin/Surveys';
-import AdminSettings from '@/pages/admin/Settings';
-import Reports from '@/pages/admin/Reports';
-import { Support } from '@/pages/Support';
-import Privacy from '@/pages/Privacy';
-import Terms from '@/pages/Terms';
+const Layout = lazy(() => import('@/components/Layout').then(module => ({ default: module.Layout })));
+const AdminLayout = lazy(() => import('@/components/AdminLayout').then(module => ({ default: module.AdminLayout })));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Login = lazy(() => import('@/pages/Login'));
+const Landing = lazy(() => import('@/pages/Landing'));
+const Creators = lazy(() => import('@/pages/Creators'));
+const ContentIdeas = lazy(() => import('@/pages/ContentIdeas'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const AccountSettings = lazy(() => import('@/pages/AccountSettings'));
+const SecuritySettings = lazy(() => import('@/pages/SecuritySettings'));
+const SettingsShell = lazy(() => import('@/components/SettingsShell'));
+const SharedProfile = lazy(() => import('@/pages/SharedProfile'));
+const Collaborations = lazy(() => import('@/pages/Collaborations'));
+const Tasks = lazy(() => import('@/pages/Tasks'));
+const FocusRoom = lazy(() => import('@/pages/FocusRoom'));
+const Calendar = lazy(() => import('@/pages/Calendar'));
+const Tools = lazy(() => import('@/pages/Tools'));
+const Onboarding = lazy(() => import('@/pages/Onboarding'));
+const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
+const Analytics = lazy(() => import('@/pages/admin/Analytics'));
+const Users = lazy(() => import('@/pages/admin/Users'));
+const Moderation = lazy(() => import('@/pages/admin/Moderation'));
+const Surveys = lazy(() => import('@/pages/admin/Surveys'));
+const AdminSettings = lazy(() => import('@/pages/admin/Settings'));
+const Reports = lazy(() => import('@/pages/admin/Reports'));
+const Support = lazy(() => import('@/pages/Support').then(module => ({ default: module.Support })));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { FeatureProvider, FeatureGuard } from '@/contexts/FeatureContext';
@@ -297,7 +298,10 @@ export default function App() {
       <FeatureProvider>
         <Router>
           <Toaster position="top-right" theme="dark" />
-          <AppRoutes />
+          <PageMetadata />
+          <Suspense fallback={<div role="status" className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+            <AppRoutes />
+          </Suspense>
         </Router>
       </FeatureProvider>
     </AuthProvider>

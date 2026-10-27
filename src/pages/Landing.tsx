@@ -409,14 +409,14 @@ const features = [
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Platform</h4>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Platform</h3>
               <ul className="space-y-2.5 text-sm text-zinc-400">
                 <li><Link to="/login" className="hover:text-white transition-colors">Sign In / Register</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal & Support</h4>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal & Support</h3>
               <ul className="space-y-2.5 text-sm text-zinc-400">
                 <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>

@@ -1,0 +1,22 @@
+{
+  "/": {
+    "title": "BoostD — Your Content Management Platform",
+    "description": "BoostD helps creators, social media managers, and teams organize, plan, and grow their digital content from one centralized workspace.",
+    "robots": "index, follow"
+  },
+  "/privacy": {
+    "title": "Privacy Policy — BoostD",
+    "description": "Learn how BoostD collects, uses, and protects your account information and content, including Google account data and your privacy choices.",
+    "robots": "index, follow"
+  },
+  "/terms": {
+    "title": "Terms of Service — BoostD",
+    "description": "Read the terms for using BoostD, including account responsibilities, acceptable use, and ownership of your creative content.",
+    "robots": "index, follow"
+  },
+  "/login": {
+    "title": "Sign In — BoostD",
+    "description": "Sign in to your BoostD workspace to organize ideas, plan content, manage tasks, and focus on creating.",
+    "robots": "noindex, follow"
+  }
+}

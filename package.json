@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "demo:record": "vite --config scripts/workspace-recording/vite.config.ts",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-public-metadata.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
