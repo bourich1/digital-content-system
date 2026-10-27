@@ -1,0 +1,4 @@
+.idea-status-card { transition: border-color 200ms ease,background-color 200ms ease,box-shadow 200ms ease; }
+.idea-status-card:hover,.idea-status-card:focus-within { border-color: color-mix(in srgb,var(--idea-accent) 30%,transparent); border-left-color: var(--idea-accent); background-color: color-mix(in srgb,var(--idea-accent) 7%,#101012); box-shadow: 0 0 22px color-mix(in srgb,var(--idea-accent) 7%,transparent); }
+.idea-status-card:hover .idea-status-title,.idea-status-card:focus-within .idea-status-title { color: var(--idea-accent); }
+@media(prefers-reduced-motion:reduce) { .idea-status-card,.idea-status-title { transition: none; } }

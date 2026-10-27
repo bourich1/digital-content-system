@@ -1,0 +1,14 @@
+.workspace-demo-section{max-width:1320px;margin:0 auto 100px;padding:0 20px}
+.workspace-demo-heading{text-align:center;margin:0 auto 8px;max-width:680px}
+.landing-page .workspace-demo-heading h2{font-size:clamp(30px,4.1vw,49px);font-weight:500;line-height:1.13;letter-spacing:-1.8px;margin:0;color:var(--ink,#f5f5f5)}
+.workspace-demo-heading h2 em{font-family:inherit;font-weight:500;font-style:normal;letter-spacing:-1.4px;color:var(--landing-accent,#f07832);animation:workspace-text-glow 5s ease-in-out infinite}
+.landing-page .workspace-demo-heading p{font-size:12px;line-height:1.7;color:var(--muted,#8b8b93);margin:0}
+.workspace-demo-stage{position:relative;max-width:1160px;margin:0 auto}
+.workspace-demo-window{position:relative;overflow:hidden;background:transparent}
+.workspace-demo-window video{display:block;width:100%;height:auto;background:transparent}
+.workspace-demo-error{font-size:12px;padding:18px;color:#a1a1aa}.workspace-demo-error a{color:#fb923c}
+@keyframes workspace-text-glow{0%,100%{text-shadow:0 0 3px color-mix(in srgb,var(--landing-accent,#f07832) 10%,transparent)}50%{text-shadow:0 0 14px color-mix(in srgb,var(--landing-accent,#f07832) 50%,transparent),0 0 30px color-mix(in srgb,var(--landing-accent,#f07832) 25%,transparent)}}
+@media(max-width:640px){.workspace-demo-section{padding:0 10px;margin-bottom:65px}.workspace-demo-heading{margin-bottom:8px}.workspace-demo-eyebrow{font-size:7px;margin-bottom:11px}.landing-page .workspace-demo-heading h2{letter-spacing:-1px}.workspace-demo-heading h2 em{letter-spacing:-.9px}.landing-page .workspace-demo-heading p{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.workspace-demo-heading h2 em{animation:none}}
+
+

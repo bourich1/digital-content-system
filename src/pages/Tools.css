@@ -1,0 +1,58 @@
+/* The tool library uses BoostD's charcoal surfaces and orange accents. */
+.tools-library { max-width: 1240px; margin-inline: auto; padding: 8px 0 36px; }
+.tools-heading { padding: 22px 0 26px; gap: 24px; }
+.tools-heading h1 { font-size: clamp(30px,3.3vw,46px); font-weight: 500; letter-spacing: -1.6px; margin-top: 13px; line-height: 1.2; }
+.tools-heading h1 > span { color: #f97316; }
+.tools-heading p { margin-top: 13px; font-size: 13px; color: #92929d; line-height: 1.7; }
+.tools-library .tools-add-button { background: #f97316; color: #fff; font-size: 12px; padding: 11px 16px; border-radius: 10px; white-space: nowrap; align-self: center; box-shadow: 0 4px 16px #f9731614; }.tools-library .tools-add-button:hover { background: #ea580c; }
+.tools-library .tools-discovery { display: flex; flex-direction: column; align-items: stretch; gap: 22px; background: transparent; border: 0; padding: 0 0 23px; border-bottom: 1px solid #242427; border-radius: 0; }
+.tools-library .tools-search { order: -1; width: 100%; }
+.tools-search > svg { left: 19px; width: 18px; height: 18px; color: #71717a; }
+.tools-search input { border: 1px solid #303034; border-radius: 13px; background: linear-gradient(100deg,#19191c,#131315); font-size: 13px; height: 58px; padding: 16px 20px 16px 50px; color: #f4f4f5; box-shadow: 0 6px 24px #00000010; }.tools-search input::placeholder { color: #71717a; }.tools-search input:focus { border-color: #f9731680; outline: none; box-shadow: 0 0 0 3px #f9731610; }
+.tools-library .tools-categories { gap: 7px; padding-bottom: 3px; scrollbar-width: thin; scrollbar-color: #3f3f46 transparent; }
+.tools-categories button { border: 1px solid transparent; background: transparent; color: #8b8b95; font-size: 11px; font-weight: 400; padding: 8px 13px; border-radius: 8px; }.tools-categories button:hover { background: #ffffff05; color: #e4e4e7; }.tools-categories button[aria-pressed="true"] { background: #f9731614; color: #fb923c; border-color: #f9731626; }
+.tools-results-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; }.tools-results-heading h2 { font-size: 15px; font-weight: 500; color: #d4d4d8; letter-spacing: -.2px; }.tools-results-heading > span { font-size: 10px; color: #71717a; }
+.tools-library .tools-grid { gap: 18px; }
+.tools-library .tool-card { background: linear-gradient(150deg,#19191c,#131315); border: 1px solid #2b2b30; border-radius: 16px; padding: 23px; min-height: 226px; transition: transform .2s,border-color .2s,box-shadow .2s; }
+.tools-library .tool-card:hover { transform: translateY(-4px); border-color: #f9731655; box-shadow: 0 12px 28px #0002; }
+.tool-card-heading { gap: 13px; margin-bottom: 17px; }
+.tools-library .tool-logo { width: 47px; height: 47px; border-radius: 12px; background: #232326; border: 1px solid #36363b; box-shadow: 0 3px 8px #0002; }
+.tool-logo img { padding: 5px; }.tool-monogram { font-size: 15px; font-weight: 600; letter-spacing: -.5px; color: #fdba74; }
+.tool-card h3 { font-size: 16px; font-weight: 500; letter-spacing: -.3px; margin-block: 3px 6px; }
+.tools-library .tool-category { background: transparent; color: #8b8b95; padding: 0; font-size: 10px; font-weight: 400; }.tool-category::before { content: ''; display: inline-block; width: 4px; height: 4px; background: #f9731680; border-radius: 50%; margin-right: 6px; vertical-align: 2px; }
+.tools-library .tool-description { font-size: 12px; line-height: 1.85; color: #92929d; margin-bottom: 23px; }
+.tool-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 15px; border-top: 1px solid #ffffff07; margin-top: auto; }
+.tool-domain { color: #71717a; font-size: 10px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tools-library .tool-open { width: auto; flex-shrink: 0; padding: 6px 9px; font-size: 11px; font-weight: 500; border-radius: 7px; background: #ffffff04; border: 1px solid #ffffff06; color: #bcbcc5; gap: 5px; }.tools-library .tool-open:hover { color: #fb923c; background: #f9731610; border-color: #f9731620; }.tool-open svg { width: 13px; height: 13px; }
+.tools-library .tools-empty { padding-block: 65px; background: #151517; border: 1px dashed #343438; border-radius: 16px; }.tools-empty h3 { font-size: 18px; font-weight: 500; }.tools-empty p { font-size: 12px; line-height: 1.8; }
+.tools-library :is(button,a,input):focus-visible { outline: 2px solid #fb923c; outline-offset: 3px; }
+.tool-card > button:focus-visible { opacity: 1; }
+@media(hover:none) { .tool-card > button { opacity: 1; } }
+@media(max-width:640px) { .tools-heading { padding-top: 8px; }.tools-heading h1 { font-size: 32px; letter-spacing: -1px; }.tools-heading p { font-size: 12px; }.tools-library .tools-add-button { align-self: flex-start; }.tools-library .tool-card { min-height: 210px; padding: 21px; }.tools-search input { height: 52px; font-size: 12px; }.tools-categories button { padding: 8px 11px; }.tools-results-heading h2 { font-size: 14px; } }
+@media(prefers-reduced-motion:reduce) { .tools-library .tool-card { transition: none; }.tools-library .tool-card:hover { transform: none; } }
+
+/* Center the introduction; keep discovery controls on one compact row. */
+.tools-library .tools-heading { flex-direction: column; align-items: center; text-align: center; padding: 32px 0 34px; gap: 18px; }
+.tools-heading > div { max-width: 780px; }
+.tools-heading h1 { margin-top: 0; font-size: clamp(34px,3.8vw,52px); letter-spacing: -1.8px; }
+.tools-heading p { font-size: clamp(14px,1.4vw,17px); max-width: 620px; margin: 16px auto 0; line-height: 1.8; }
+.tools-library .tools-add-button { align-self: center; }
+.tools-library .tools-discovery { flex-direction: row; align-items: center; gap: 20px; }
+.tools-library .tools-categories { flex: 1; min-width: 0; width: auto; }
+.tools-library .tools-search { order: 0; width: 245px; flex: 0 0 245px; }
+.tools-search input { height: 43px; padding: 11px 14px 11px 39px; font-size: 12px; border-radius: 10px; }
+.tools-search > svg { left: 14px; width: 15px; height: 15px; }
+/* A single soft orange gleam sweeps across each card on hover. */
+.tools-library .tool-card { overflow: hidden; isolation: isolate; }
+.tool-card::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(100deg,transparent 15%,#f9731605 35%,#fb923c24 50%,#ffedd510 55%,#f9731608 65%,transparent 85%); transform: translateX(-130%) skewX(-14deg); opacity: 0; }
+.tool-card:hover::after,.tool-card:focus-within::after { animation: tool-orange-gleam .85s ease-out both; }
+.tools-library .tool-card:hover { border-color: #f9731670; box-shadow: 0 10px 28px #0003,0 0 20px #f9731609; }
+@keyframes tool-orange-gleam { 0% { transform: translateX(-130%) skewX(-14deg); opacity: 0; } 20% { opacity: 1; } 75% { opacity: 1; } 100% { transform: translateX(130%) skewX(-14deg); opacity: 0; } }
+@media(max-width:767px) { .tools-library .tools-heading { padding-top: 16px; }.tools-heading h1 { font-size: 35px; }.tools-heading p { font-size: 14px; }.tools-library .tools-discovery { flex-wrap: wrap; gap: 14px; }.tools-library .tools-search { flex: 0 0 100%; width: 100%; order: -1; }.tools-library .tools-categories { flex-basis: 100%; } }
+@media(prefers-reduced-motion:reduce) { .tool-card:hover::after,.tool-card:focus-within::after { animation: none; } }
+/* BoostD watermark: decorative brand artwork behind the introduction. */
+.tools-library .tools-heading { position: relative; isolation: isolate; overflow: hidden; border-radius: 20px; }
+.tools-heading::before { content: ''; position: absolute; z-index: -1; pointer-events: none; width: 310px; height: 310px; right: 5%; top: -84px; background: url('/icon%20white.png') center / contain no-repeat; opacity: .055; transform: rotate(-16deg); mask-image: linear-gradient(140deg,#000 10%,#0008 65%,transparent 95%); }
+.tools-heading::after { content: ''; position: absolute; z-index: -2; pointer-events: none; width: 460px; height: 280px; right: -25px; top: -90px; background: radial-gradient(ellipse,#f973160c,transparent 70%); }
+.tools-heading > div,.tools-heading > button { position: relative; z-index: 1; }
+@media(max-width:640px) { .tools-heading::before { width: 220px; height: 220px; right: -48px; top: -24px; opacity: .045; } }

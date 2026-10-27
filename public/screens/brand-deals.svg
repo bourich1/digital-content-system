@@ -1,0 +1,19 @@
+<!-- Placeholder SVG gradient screenshot -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F0F16"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF7A1A;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:0.3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#bg)"/>
+  <rect x="40" y="40" width="1120" height="670" rx="16" fill="url(#accent)"/>
+  <rect x="40" y="40" width="1120" height="50" rx="16" fill="rgba(255,255,255,0.05)"/>
+  <circle cx="70" cy="65" r="6" fill="#FF5F57"/>
+  <circle cx="92" cy="65" r="6" fill="#FEBC2E"/>
+  <circle cx="114" cy="65" r="6" fill="#28C840"/>
+</svg>

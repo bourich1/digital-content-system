@@ -1,0 +1,23 @@
+# Allow all search engines to crawl public pages
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /privacy
+Allow: /terms
+
+# Disallow private user & admin dashboard pages
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /onboarding
+Disallow: /creators
+Disallow: /ideas
+Disallow: /collaborations
+Disallow: /calendar
+Disallow: /tasks
+Disallow: /focus
+Disallow: /tools
+Disallow: /settings
+Disallow: /support
+
+# Sitemap location
+Sitemap: https://www.boostd.app/sitemap.xml

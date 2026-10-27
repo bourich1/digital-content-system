@@ -1,0 +1,1 @@
+Brand SVGs from Simple Icons v13.0.0 (https://github.com/simple-icons/simple-icons/tree/13.0.0/icons), distributed under CC0. Brand names and marks belong to their respective owners. Used as visual examples of a creator workflow, not a claim of API integration.

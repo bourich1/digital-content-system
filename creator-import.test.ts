@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {parseProfileLink} from './src/lib/creatorProfile';
+import {readProfileMetadata, lookupCreator} from './server/creatorLookup';
+assert.equal(parseProfileLink('instagram.com/example?igsh=abc').url, 'https://instagram.com/example');
+assert.equal(parseProfileLink('https://www.youtube.com/@creator').platform, 'YouTube');
+for (const url of ['https://localhost/a', 'https://youtube.com.evil.com/@name', 'https://instagram.com/p/123', 'https://user:pass@instagram.com/name', 'https://127.0.0.1/test']) assert.throws(() => parseProfileLink(url));
+assert.equal(readProfileMetadata('<meta content="Name &amp; Co" property="og:title">').name, 'Name & Co');
+assert.equal((await lookupCreator('https://x.com/example')).imported, false);
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async () => new Response('<meta property="og:title" content="A Creator - YouTube"><meta property="og:description" content="Creator bio"><meta property="og:image" content="https://example.com/avatar.jpg">');
+const imported = await lookupCreator('https://youtube.com/@creator');
+assert.equal(imported.name, 'A Creator'); assert.equal(imported.imported, true);
+globalThis.fetch = async () => new Response('denied', {status: 403});
+assert.equal((await lookupCreator('https://instagram.com/creator')).imported, false);
+globalThis.fetch = originalFetch;
+console.log('Creator import validation, metadata, success and fallback tests passed.');

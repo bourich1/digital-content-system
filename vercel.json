@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/api/creator-profile", "destination": "/api/creator-profile" },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
