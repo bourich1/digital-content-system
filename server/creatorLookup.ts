@@ -1,4 +1,4 @@
-import { parseProfileLink } from '../src/lib/creatorProfile';
+import { parseProfileLink } from '../src/lib/creatorProfile.js';
 
 function decode(value: string) {
   return value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Math.min(Number(n), 0x10ffff)));
