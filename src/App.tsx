@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import PageMetadata from '@/components/PageMetadata';
+import SecurityUpdateNotice from '@/components/SecurityUpdateNotice';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CornerRightDown } from 'lucide-react';
 import { Toaster } from 'sonner';
@@ -299,6 +300,7 @@ export default function App() {
         <Router>
           <Toaster position="top-right" theme="dark" />
           <PageMetadata />
+          <SecurityUpdateNotice />
           <Suspense fallback={<div role="status" className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
             <AppRoutes />
           </Suspense>

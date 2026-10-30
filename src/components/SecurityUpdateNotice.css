@@ -1,0 +1,28 @@
+.security-update-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(88dvh, 820px);
+  margin: auto;
+  padding: 28px;
+  overflow-y: auto;
+  color: var(--text-primary, #f4f4f5);
+  background: var(--bg-secondary, #171719);
+  border: 1px solid var(--border-color, #353538);
+  border-radius: 22px;
+  box-shadow: 0 24px 90px #0007;
+  font-family: inherit;
+}
+.security-update-dialog::backdrop { background: #000a; }
+.security-update-heading { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1; background: inherit; }
+.security-update-symbol { display: grid; place-items: center; width: 52px; height: 52px; color: #ff7a24; background: #ff7a2415; border: 1px solid #ff7a2438; border-radius: 15px; }
+.security-update-close { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; color: inherit; background: transparent; border: 1px solid var(--border-color, #353538); cursor: pointer; position: sticky; top: 0; }
+.security-update-close:hover { background: #ff7a241c; }
+.security-update-dialog button:focus-visible { outline: 2px solid #ff7a24; outline-offset: 4px; }
+.security-update-date { margin: 20px 0 8px; font-size: 12px; opacity: .7; }
+.security-update-dialog h2 { margin: 0 0 16px; font-size: clamp(23px, 4vw, 29px); line-height: 1.25; font-weight: 700; }
+#security-update-description > p { margin: 0 0 12px; font-size: 14px; line-height: 1.7; }
+.security-update-arabic { padding-top: 17px; margin-top: 19px; border-top: 1px solid var(--border-color, #353538); }
+.security-update-arabic h3 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+.security-update-arabic p { margin: 0 0 10px; font-size: 14px; line-height: 1.9; }
+.security-update-confirm { width: 100%; margin-top: 16px; padding: 13px 18px; border: 0; border-radius: 12px; background: #ff7a24; color: #17100b; font-weight: 700; font-size: 14px; cursor: pointer; }
+.security-update-confirm:hover { background: #ff934d; }
+@media (max-width: 480px) { .security-update-dialog { padding: 20px; border-radius: 18px; } }
