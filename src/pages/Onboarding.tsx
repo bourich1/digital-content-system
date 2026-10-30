@@ -194,7 +194,7 @@ export default function Onboarding() {
 
       if (surveyError) throw surveyError;
 
-      // 2. Update profile
+      // 2. Update allowed profile fields
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -204,11 +204,14 @@ export default function Onboarding() {
           cover_gradient: formData.cover_gradient,
           domain_industry: formData.domain_industry,
           occupation: formData.occupation,
-          survey_completed: true
         })
         .eq('id', user.id);
 
       if (profileError) throw profileError;
+
+      // 3. Mark survey completed via verified RPC (protected field)
+      const { error: completeError } = await supabase.rpc('complete_onboarding');
+      if (completeError) throw completeError;
 
       await refreshProfile();
       setCompleted(true);

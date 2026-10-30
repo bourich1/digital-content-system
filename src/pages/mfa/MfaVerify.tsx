@@ -5,12 +5,24 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMfa } from '@/contexts/MfaContext';
 
+function sanitizeRedirectDestination(raw: unknown): string {
+  if (typeof raw !== 'string') return '/admin';
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || /^[a-z0-9+.-]+:/i.test(trimmed)) {
+    return '/admin';
+  }
+  if (trimmed.startsWith('/security/mfa')) {
+    return '/admin';
+  }
+  return trimmed;
+}
+
 export default function MfaVerify() {
   const { isDemoMode } = useAuth();
   const { loading, factors, enrolled, satisfied, refresh } = useMfa();
   const location = useLocation();
   const navigate = useNavigate();
-  const from = (location.state as { from?: string } | null)?.from || '/admin';
+  const from = sanitizeRedirectDestination((location.state as { from?: string } | null)?.from);
   const [factorId, setFactorId] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -22,7 +34,7 @@ export default function MfaVerify() {
   }, [factors, factorId]);
 
   useEffect(() => {
-    if (satisfied) navigate(from.startsWith('/security/mfa') ? '/admin' : from, { replace: true });
+    if (satisfied) navigate(from, { replace: true });
   }, [satisfied, from, navigate]);
 
   if (isDemoMode) return <Shell><p className="text-zinc-400">Two-factor verification is unavailable in this read-only preview.</p></Shell>;
@@ -57,7 +69,7 @@ export default function MfaVerify() {
         setError('Two-factor verification could not be confirmed. Sign in again to continue.');
         return;
       }
-      navigate(from.startsWith('/security/mfa') ? '/admin' : from, { replace: true });
+      navigate(from, { replace: true });
     } catch {
       setError('Could not verify that code. Check your connection and try again.');
     } finally {

@@ -101,11 +101,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const request = ++previewRequest.current;
     setLoadingDemo(true);
     try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-      if (error || !data) throw error || new Error('User profile unavailable');
+      // Server-side audit logged and validated start of impersonation
+      const { data: targetProfile, error: rpcError } = await supabase.rpc('start_impersonation', {
+        p_target_user_id: userId,
+      });
+      if (rpcError) throw rpcError;
+
+      const profileData = targetProfile || (await supabase.from('profiles').select('*').eq('id', userId).single()).data;
+      if (!profileData) throw new Error('User profile unavailable');
       if (request !== previewRequest.current) throw new Error('Preview cancelled');
+
       setPreviewUserId(userId);
-      setImpersonatedProfile(data);
+      setImpersonatedProfile(profileData as Profile);
       setImpersonatedUserId(userId);
     } finally {
       if (request === previewRequest.current) setLoadingDemo(false);
@@ -113,11 +120,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const exitDemoMode = () => {
+    const currentId = impersonatedUserId;
     ++previewRequest.current;
     setPreviewUserId(null);
     setImpersonatedUserId(null);
     setImpersonatedProfile(null);
     setLoadingDemo(false);
+
+    if (currentId) {
+      // Server-side audit logged exit of impersonation
+      void supabase.rpc('end_impersonation', { p_target_user_id: currentId });
+    }
   };
 
   useEffect(() => {

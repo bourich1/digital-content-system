@@ -17,6 +17,7 @@ const SecuritySettings = lazy(() => import('@/pages/SecuritySettings'));
 const MfaSetup = lazy(() => import('@/pages/mfa/MfaSetup'));
 const MfaVerify = lazy(() => import('@/pages/mfa/MfaVerify'));
 const AdminSecurity = lazy(() => import('@/pages/admin/Security'));
+const AdminLogin = lazy(() => import('@/pages/admin/AdminLogin'));
 const SettingsShell = lazy(() => import('@/components/SettingsShell'));
 const SharedProfile = lazy(() => import('@/pages/SharedProfile'));
 const Collaborations = lazy(() => import('@/pages/Collaborations'));
@@ -69,6 +70,10 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
   
   if (decision.kind === 'login') {
     return <Navigate to="/login" replace />;
+  }
+
+  if (decision.kind === 'admin-login') {
+    return <Navigate to="/admin/login" replace />;
   }
 
   if (decision.kind === 'loading') {
@@ -159,6 +164,11 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={
         session ? <Navigate to="/" replace /> : <Login />
+      } />
+      <Route path="/admin/login" element={
+        <ProtectedRoute>
+          <AdminLogin />
+        </ProtectedRoute>
       } />
       
       <Route path="/u/:username" element={<SharedProfile />} />

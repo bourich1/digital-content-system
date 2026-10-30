@@ -89,6 +89,11 @@ export default function MfaSetup() {
 
       const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (data?.currentLevel === 'aal2') {
+        try {
+          await supabase.auth.signOut({ scope: 'others' });
+        } catch {
+          // Gracefully continue if others scope unsupported
+        }
         navigate('/admin', { replace: true });
       } else {
         setPhase('intro');

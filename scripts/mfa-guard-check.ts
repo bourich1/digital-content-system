@@ -37,6 +37,8 @@ function expect(name: string, actual: string, expected: string) {
 expect('1a normal user aal1 -> app', decideAccess(user({ pathname: '/' })).kind, 'layout');
 expect('1b normal user aal1 -> /admin', decideAccess(user({ pathname: '/admin', requireAdmin: true })).kind, 'home');
 expect('1c normal user aal2 -> /admin still denied', decideAccess(user({ pathname: '/admin', requireAdmin: true, currentLevel: 'aal2', nextLevel: 'aal2' })).kind, 'home');
+expect('1d normal user -> /security/mfa/setup denied', decideAccess(user({ pathname: '/security/mfa/setup' })).kind, 'home');
+expect('1e normal user -> /admin/login denied', decideAccess(user({ pathname: '/admin/login' })).kind, 'home');
 
 // 2. Admin with password only and no MFA factor: enrollment required.
 expect('2  admin aal1/no factor -> /admin', decideAccess(admin({ pathname: '/admin', requireAdmin: true })).kind, 'mfa-enroll');
@@ -58,7 +60,7 @@ expect('5c stale aal2 session, factor removed elsewhere -> /admin', decideAccess
 expect('6a admin aal1 direct /admin/analytics', decideAccess(admin({ pathname: '/admin/analytics', requireAdmin: true, nextLevel: 'aal2' })).kind, 'mfa-verify');
 expect('6b admin while assurance still loading', decideAccess(admin({ pathname: '/admin', requireAdmin: true, mfaLoading: true, nextLevel: 'aal2' })).kind, 'loading');
 
-// 7. The two-factor screens themselves stay reachable at aal1 (otherwise the
+// 7. The two-factor screens themselves stay reachable at aal1 for admin (otherwise the
 //    admin could never enroll), and they render without admin chrome.
 expect('7a admin aal1 -> /security/mfa/setup', decideAccess(admin({ pathname: '/security/mfa/setup' })).kind, 'allow');
 expect('7b admin aal1 -> /security/mfa/verify', decideAccess(admin({ pathname: '/security/mfa/verify', nextLevel: 'aal2' })).kind, 'allow');
@@ -66,18 +68,23 @@ expect('7b admin aal1 -> /security/mfa/verify', decideAccess(admin({ pathname: '
 // 8. Admin at aal2 browsing a user route is still sent to the workspace.
 expect('8  admin aal2 -> /', decideAccess(admin({ pathname: '/', currentLevel: 'aal2', nextLevel: 'aal2' })).kind, 'admin-home');
 
-// 9. Normal flows unaffected: onboarding, suspension, signed out, demo mode.
-expect('9a user with incomplete survey -> onboarding', decideAccess(user({ pathname: '/tasks', surveyCompleted: false })).kind, 'onboarding');
-expect('9b suspended session -> suspended', decideAccess(user({ status: 'suspended' })).kind, 'suspended');
-expect('9c no session -> login', decideAccess(user({ hasSession: false })).kind, 'login');
-expect('9d admin demo mode (impersonating a user) -> app', decideAccess(user({ isDemoMode: true, pathname: '/tasks' })).kind, 'layout');
-expect('9e user at aal2 on /settings/security -> app', decideAccess(user({ pathname: '/settings/security', currentLevel: 'aal2', nextLevel: 'aal2' })).kind, 'layout');
+// 9. Unauthenticated routing: public vs admin
+expect('9a unauthenticated -> / goes to login', decideAccess(user({ hasSession: false, pathname: '/' })).kind, 'login');
+expect('9b unauthenticated -> /admin goes to admin-login', decideAccess(user({ hasSession: false, pathname: '/admin' })).kind, 'admin-login');
+expect('9c unauthenticated -> /admin/login is allowed', decideAccess(user({ hasSession: false, pathname: '/admin/login' })).kind, 'allow');
 
-// 10. The satisfaction predicate itself.
-expect('10a aal2/aal2 satisfied', String(isTwoFactorSatisfied('aal2', 'aal2')), 'true');
-expect('10b aal2/aal1 not satisfied', String(isTwoFactorSatisfied('aal2', 'aal1')), 'false');
-expect('10c aal1/aal2 not satisfied', String(isTwoFactorSatisfied('aal1', 'aal2')), 'false');
-expect('10d null levels not satisfied', String(isTwoFactorSatisfied(null, null)), 'false');
+// 10. Normal flows unaffected: onboarding, suspension, signed out, demo mode.
+expect('10a user with incomplete survey -> onboarding', decideAccess(user({ pathname: '/tasks', surveyCompleted: false })).kind, 'onboarding');
+expect('10b suspended session -> suspended', decideAccess(user({ status: 'suspended' })).kind, 'suspended');
+expect('10c no session -> login', decideAccess(user({ hasSession: false })).kind, 'login');
+expect('10d admin demo mode (impersonating a user) -> app', decideAccess(user({ isDemoMode: true, pathname: '/tasks' })).kind, 'layout');
+expect('10e user at aal2 on /settings/security -> app', decideAccess(user({ pathname: '/settings/security', currentLevel: 'aal2', nextLevel: 'aal2' })).kind, 'layout');
+
+// 11. The satisfaction predicate itself.
+expect('11a aal2/aal2 satisfied', String(isTwoFactorSatisfied('aal2', 'aal2')), 'true');
+expect('11b aal2/aal1 not satisfied', String(isTwoFactorSatisfied('aal2', 'aal1')), 'false');
+expect('11c aal1/aal2 not satisfied', String(isTwoFactorSatisfied('aal1', 'aal2')), 'false');
+expect('11d null levels not satisfied', String(isTwoFactorSatisfied(null, null)), 'false');
 
 console.log(failures === 0 ? '\nALL GUARD CHECKS PASSED' : `\n${failures} GUARD CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

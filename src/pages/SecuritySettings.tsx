@@ -36,7 +36,12 @@ export default function SecuritySettings() {
         } else throw updateError;
       } else {
         setPassword(''); setConfirmation(''); setNonce(''); setNeedsVerification(false);
-        setMessage('Your password has been updated.');
+        try {
+          await supabase.auth.signOut({ scope: 'others' });
+        } catch {
+          // Graceful fallback if others scope not supported
+        }
+        setMessage('Your password has been updated. Other sessions have been signed out.');
       }
     } catch (issue) { setError(issue instanceof Error ? issue.message : 'Could not update your password. Please try again.'); }
     finally { setBusy(false); }

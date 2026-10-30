@@ -33,7 +33,12 @@ export default function AdminSecurity() {
       const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId });
       if (unenrollError) throw unenrollError;
       await refresh();
-      setMessage('Authenticator removed.');
+      try {
+        await supabase.auth.signOut({ scope: 'others' });
+      } catch {
+        // Continue
+      }
+      setMessage('Authenticator removed. Other active sessions were signed out.');
     } catch {
       setError('Could not remove that authenticator. Please try again.');
     } finally {

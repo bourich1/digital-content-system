@@ -18,6 +18,7 @@ export interface AccessInput {
 
 export type AccessDecision =
   | { kind: 'login' }
+  | { kind: 'admin-login' }
   | { kind: 'loading' }
   | { kind: 'suspended' }
   | { kind: 'onboarding' }
@@ -47,29 +48,56 @@ export function isTwoFactorSatisfied(currentLevel: Level, nextLevel: Level) {
  */
 export function decideAccess(input: AccessInput): AccessDecision {
   const onMfaRoute = input.pathname.startsWith(MFA_PREFIX);
+  const onAdminLogin = input.pathname === '/admin/login';
   const isAdmin = input.role === 'admin';
 
   if (!input.configured) return { kind: 'login' };
   if (input.loading) return { kind: 'loading' };
-  if (!input.hasSession) return { kind: 'login' };
+
+  // Unauthenticated routing
+  if (!input.hasSession) {
+    if (onAdminLogin) return { kind: 'allow' };
+    if (input.pathname.startsWith('/admin')) return { kind: 'admin-login' };
+    return { kind: 'login' };
+  }
+
+  // Already authenticated on admin-login
+  if (onAdminLogin) {
+    if (isAdmin) {
+      if (input.mfaLoading) return { kind: 'loading' };
+      if (!isTwoFactorSatisfied(input.currentLevel, input.nextLevel)) {
+        return { kind: input.nextLevel === 'aal2' ? 'mfa-verify' : 'mfa-enroll' };
+      }
+      return { kind: 'admin-home' };
+    }
+    return { kind: 'home' };
+  }
+
+  // Suspended account
   if (input.status === 'suspended') return { kind: 'suspended' };
 
+  // Normal user onboarding check
   if (input.role !== null && !isAdmin && !input.surveyCompleted && input.pathname !== '/onboarding') {
     return { kind: 'onboarding' };
   }
 
+  // Admin-only route guard
   if (input.requireAdmin && !isAdmin) return { kind: 'home' };
+
+  // MFA setup and verify routes are restricted strictly to administrators
+  if (onMfaRoute) {
+    if (!isAdmin) return { kind: 'home' };
+    return { kind: 'allow' };
+  }
 
   // Administrator access requires aal2 on this session. Password-only (aal1)
   // sessions go to enrollment or to the challenge, never to the panel.
-  if (isAdmin && !onMfaRoute) {
+  if (isAdmin) {
     if (input.mfaLoading) return { kind: 'loading' };
     if (!isTwoFactorSatisfied(input.currentLevel, input.nextLevel)) {
       return { kind: input.nextLevel === 'aal2' ? 'mfa-verify' : 'mfa-enroll' };
     }
   }
-
-  if (onMfaRoute) return { kind: 'allow' };
 
   if (isAdmin && !input.isDemoMode && !input.pathname.startsWith('/admin')) {
     return { kind: 'admin-home' };
