@@ -161,7 +161,13 @@ export default function Settings() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
+
+    const fileExt = (file.name.split('.').pop() || '').toLowerCase();
+    if (!['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(fileExt)) {
+      toast.error('Use a PNG, JPG, WEBP or GIF image.');
+      return;
+    }
 
     if (file.size > 3 * 1024 * 1024) {
       toast.error('Image size must be less than 3 MB.');
@@ -176,9 +182,10 @@ export default function Settings() {
     }, 15000);
 
     try {
-      const fileExt = file.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      // Objects are stored under the caller's own user id so the storage policy
+      // can refuse writes into another account's folder.
+      const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')

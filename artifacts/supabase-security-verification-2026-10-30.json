@@ -1,0 +1,1 @@
+{"test_changes": "ROLLBACK", "own_profile_access": true, "role_escalation_test": "PASS", "other_profiles_visible": 0, "ordinary_profile_update": "PASS", "anonymous_collaboration_rpc": false, "authenticated_collaboration_rpc": true}

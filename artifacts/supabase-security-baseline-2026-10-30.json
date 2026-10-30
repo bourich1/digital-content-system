@@ -1,0 +1,1593 @@
+{
+  "tables": [
+    {
+      "rls": true,
+      "name": "creators"
+    },
+    {
+      "rls": true,
+      "name": "content_items"
+    },
+    {
+      "rls": true,
+      "name": "categories"
+    },
+    {
+      "rls": true,
+      "name": "products"
+    },
+    {
+      "rls": true,
+      "name": "product_images"
+    },
+    {
+      "rls": true,
+      "name": "product_variants"
+    },
+    {
+      "rls": true,
+      "name": "creator_reviews"
+    },
+    {
+      "rls": true,
+      "name": "collaborations"
+    },
+    {
+      "rls": true,
+      "name": "ads"
+    },
+    {
+      "rls": true,
+      "name": "collaboration_images"
+    },
+    {
+      "rls": true,
+      "name": "coupons"
+    },
+    {
+      "rls": true,
+      "name": "collab_plans"
+    },
+    {
+      "rls": true,
+      "name": "content_ideas"
+    },
+    {
+      "rls": true,
+      "name": "in_app_notifications"
+    },
+    {
+      "rls": true,
+      "name": "collab_notifications"
+    },
+    {
+      "rls": true,
+      "name": "support_tickets"
+    },
+    {
+      "rls": true,
+      "name": "support_messages"
+    },
+    {
+      "rls": true,
+      "name": "focus_sessions"
+    },
+    {
+      "rls": true,
+      "name": "calendar_events"
+    },
+    {
+      "rls": true,
+      "name": "collab_files"
+    },
+    {
+      "rls": true,
+      "name": "orders"
+    },
+    {
+      "rls": true,
+      "name": "order_items"
+    },
+    {
+      "rls": true,
+      "name": "conversations"
+    },
+    {
+      "rls": true,
+      "name": "conversation_participants"
+    },
+    {
+      "rls": true,
+      "name": "messages"
+    },
+    {
+      "rls": true,
+      "name": "profiles"
+    },
+    {
+      "rls": true,
+      "name": "tasks"
+    },
+    {
+      "rls": true,
+      "name": "onboarding_surveys"
+    },
+    {
+      "rls": true,
+      "name": "feature_flags"
+    },
+    {
+      "rls": true,
+      "name": "tools"
+    },
+    {
+      "rls": true,
+      "name": "reports"
+    },
+    {
+      "rls": true,
+      "name": "platform_settings"
+    },
+    {
+      "rls": true,
+      "name": "analytics"
+    }
+  ],
+  "definers": [
+    {
+      "config": null,
+      "signature": "is_admin()",
+      "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\nAS $function$\r\n select exists(\r\n select 1 from public.profiles\r\n where id = auth.uid() and role = 'admin'\r\n );\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "handle_ticket_reply()",
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_ticket_reply()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nbegin\r\n if new.admin_reply is not null and old.admin_reply is null then\r\n insert into public.in_app_notifications (user_id, title, message)\r\n values (\r\n new.user_id,\r\n 'Support Reply',\r\n 'An admin has replied to your ticket regarding ' || new.feature_name || '.'\r\n );\r\n end if;\r\n return new;\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "notify_user_on_admin_message()",
+      "definition": "CREATE OR REPLACE FUNCTION public.notify_user_on_admin_message()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nbegin\r\n if new.sender_id != new.user_id then\r\n insert into public.in_app_notifications (user_id, title, message)\r\n values (\r\n new.user_id,\r\n 'New Support Reply',\r\n substring(new.content from 1 for 100) || case when length(new.content) > 100 then '...' else '' end\r\n );\r\n end if;\r\n return new;\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "search_users_by_username(text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.search_users_by_username(search_query text)\n RETURNS TABLE(id uuid, username text, full_name text, avatar_url text)\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nbegin\r\n return query\r\n select p.id, p.username, p.full_name, p.avatar_url\r\n from public.profiles p\r\n where p.username ilike '%' || search_query || '%'\r\n limit 5;\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "respond_to_collaboration(uuid,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.respond_to_collaboration(collab_id uuid, response_status text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\ndeclare\r\n v_collab record;\r\n v_partner_username text;\r\nbegin\r\n select * into v_collab from public.collaborations where id = collab_id;\r\n \r\n if v_collab is null then\r\n raise exception 'Collaboration not found';\r\n end if;\r\n\r\n if v_collab.partner_id != auth.uid() then\r\n raise exception 'Not authorized';\r\n end if;\r\n \r\n select username into v_partner_username from public.profiles where id = v_collab.partner_id;\r\n\r\n if response_status = 'accepted' then\r\n update public.collaborations set partner_status = 'accepted' where id = collab_id;\r\n \r\n insert into public.in_app_notifications (user_id, collab_id, title, message)\r\n values (\r\n v_collab.user_id, \r\n v_collab.id,\r\n 'Collaboration Accepted', \r\n '@' || coalesce(v_partner_username, 'Someone') || ' accepted your collaboration request!'\r\n );\r\n elsif response_status = 'declined' then\r\n delete from public.collaborations where id = collab_id;\r\n \r\n insert into public.in_app_notifications (user_id, collab_id, title, message)\r\n values (\r\n v_collab.user_id, \r\n v_collab.id,\r\n 'Collaboration Declined', \r\n '@' || coalesce(v_partner_username, 'Someone') || ' declined your collaboration request.'\r\n );\r\n end if;\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "notify_on_collaboration_request()",
+      "definition": "CREATE OR REPLACE FUNCTION public.notify_on_collaboration_request()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\ndeclare\r\n v_sender_username text;\r\nbegin\r\n if new.partner_id is not null then\r\n select username into v_sender_username from public.profiles where id = new.user_id;\r\n \r\n insert into public.in_app_notifications (user_id, collab_id, title, message)\r\n values (\r\n new.partner_id,\r\n new.id,\r\n 'New Collaboration Request',\r\n '@' || coalesce(v_sender_username, 'Someone') || ' wants to collaborate with you!'\r\n );\r\n end if;\r\n return new;\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "handle_new_user()",
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nbegin\r\n insert into public.profiles (id, email, full_name, avatar_url)\r\n values (new.id, new.email, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url')\r\n on conflict (id) do nothing;\r\n return new;\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "get_profiles_by_usernames(text[])",
+      "definition": "CREATE OR REPLACE FUNCTION public.get_profiles_by_usernames(p_usernames text[])\n RETURNS TABLE(id uuid, username text, full_name text, avatar_url text)\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nbegin\r\n return query\r\n select p.id, p.username, p.full_name, p.avatar_url\r\n from public.profiles p\r\n where lower(p.username) = any(select lower(u) from unnest(p_usernames) as u);\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": [
+        "search_path=public"
+      ],
+      "signature": "is_conversation_participant(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.is_conversation_participant(p_conv_id uuid)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n select exists (\r\n select 1\r\n from public.conversation_participants\r\n where conversation_id = p_conv_id\r\n and user_id = auth.uid()\r\n );\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "auto_reply_support_message()",
+      "definition": "CREATE OR REPLACE FUNCTION public.auto_reply_support_message()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\ndeclare\r\n v_admin_id uuid;\r\nbegin\r\n if new.sender_id = new.user_id then\r\n select id into v_admin_id from public.profiles where role = 'admin' limit 1;\r\n \r\n if v_admin_id is not null then\r\n if not exists (\r\n select 1 from public.support_messages\r\n where user_id = new.user_id \r\n and sender_id = v_admin_id\r\n and content like 'Thank you for reaching out!%'\r\n and created_at > now() - interval '1 hour'\r\n ) then\r\n insert into public.support_messages (user_id, sender_id, content, is_read)\r\n values (\r\n new.user_id, \r\n v_admin_id, \r\n 'Thank you for reaching out! Support has received your message. We are reviewing it and will get back to you shortly.' || chr(10) || chr(10) || 'شكراً لتواصلك معنا! لقد تلقى فريق الدعم رسالتك، نحن نقوم بمراجعتها وسنرد عليك قريباً.', \r\n false\r\n );\r\n end if;\r\n end if;\r\n end if;\r\n return new;\r\nend;\r\n$function$\n"
+    },
+    {
+      "config": null,
+      "signature": "get_or_create_direct_conversation(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.get_or_create_direct_conversation(target_user_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\ndeclare\r\n v_user1 uuid;\r\n v_user2 uuid;\r\n v_hash text;\r\n v_conv_id uuid;\r\nbegin\r\n if auth.uid() is null then\r\n raise exception 'Not authenticated';\r\n end if;\r\n\r\n if target_user_id = auth.uid() then\r\n raise exception 'Cannot create a direct conversation with yourself';\r\n end if;\r\n\r\n -- Order-independent user ID hashing: LEAST & GREATEST\r\n if auth.uid() < target_user_id then\r\n v_user1 := auth.uid();\r\n v_user2 := target_user_id;\r\n else\r\n v_user1 := target_user_id;\r\n v_user2 := auth.uid();\r\n end if;\r\n\r\n v_hash := v_user1::text || ':' || v_user2::text;\r\n\r\n -- 1. Try to find existing conversation by hash\r\n select id into v_conv_id from public.conversations where participant_hash = v_hash;\r\n\r\n -- Fallback check in case hash is null on pre-existing row\r\n if v_conv_id is null then\r\n select cp1.conversation_id into v_conv_id\r\n from public.conversation_participants cp1\r\n join public.conversation_participants cp2 on cp1.conversation_id = cp2.conversation_id\r\n where cp1.user_id = v_user1 and cp2.user_id = v_user2;\r\n end if;\r\n\r\n -- 2. If found, ensure hash is saved and return conversation ID\r\n if v_conv_id is not null then\r\n update public.conversations set participant_hash = v_hash where id = v_conv_id and participant_hash is null;\r\n return v_conv_id;\r\n end if;\r\n\r\n -- 3. Create new conversation with ON CONFLICT DO NOTHING to handle race conditions\r\n insert into public.conversations (participant_hash)\r\n values (v_hash)\r\n on conflict (participant_hash) do nothing;\r\n\r\n -- Re-query to get the ID (whether created by us or concurrent transaction)\r\n select id into v_conv_id from public.conversations where participant_hash = v_hash;\r\n\r\n if v_conv_id is null then\r\n raise exception 'Failed to create conversation';\r\n end if;\r\n\r\n -- Insert participants idempotently\r\n insert into public.conversation_participants (conversation_id, user_id)\r\n values (v_conv_id, v_user1)\r\n on conflict (conversation_id, user_id) do nothing;\r\n\r\n insert into public.conversation_participants (conversation_id, user_id)\r\n values (v_conv_id, v_user2)\r\n on conflict (conversation_id, user_id) do nothing;\r\n\r\n return v_conv_id;\r\nend;\r\n$function$\n"
+    }
+  ],
+  "policies": [
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "avatars_all 1oj01fe_1",
+      "schemaname": "storage",
+      "with_check": "(bucket_id = 'avatars'::text)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "feature_flags",
+      "permissive": "PERMISSIVE",
+      "policyname": "Feature flags are viewable by everyone",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "feature_flags",
+      "permissive": "PERMISSIVE",
+      "policyname": "Feature flags are updateable by admin only",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "onboarding_surveys",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own surveys",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "onboarding_surveys",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own surveys",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "onboarding_surveys",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can do everything on surveys",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "reports",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert reports",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = reporter_id)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = reporter_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "reports",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own reports",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "reports",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can do everything on reports",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_tickets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own support tickets",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_tickets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own support tickets",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_tickets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can view all support tickets",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_tickets",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can update support tickets",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own messages",
+      "schemaname": "public",
+      "with_check": "((auth.uid() = sender_id) AND (auth.uid() = user_id))"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own chat",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can view all messages",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can reply to any chat",
+      "schemaname": "public",
+      "with_check": "(is_admin() AND (auth.uid() = sender_id))"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(bucket_id = 'avatars'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "avatars_all 1oj01fe_3",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can mark messages as read",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "support_messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can mark messages as read",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_files",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own collab files",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_files",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own collab files",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_files",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own collab files",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_files",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own collab files",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'avatars'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "avatars_all 1oj01fe_0",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "creators",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can do everything on creators",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_plans",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own collab plans",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_plans",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own collab plans",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_plans",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own collab plans",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_plans",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own collab plans",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_notifications",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own collab notifications",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_notifications",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own collab notifications",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_notifications",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own collab notifications",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collab_notifications",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own collab notifications",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(bucket_id = 'avatars'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "avatars_all 1oj01fe_2",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collaborations",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own collaborations",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "collaborations",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own collaborations",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collaborations",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own collaborations",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collaborations",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own collaborations",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "Enable read access for all users",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "Enable insert for all users",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "Enable update for all users",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "Enable delete for all users",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tasks",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own tasks",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "tasks",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own tasks",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tasks",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own tasks",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tasks",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own tasks",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own tools",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own tools",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own tools",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own tools",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own content ideas",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own content ideas",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own content ideas",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own content ideas",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "categories",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "products",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "product_images",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "product_variants",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can do everything on ideas",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "analytics",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own analytics",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "ads",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "coupons",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "orders",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "order_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "Allow all",
+      "schemaname": "public",
+      "with_check": "true"
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "analytics",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own analytics",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "analytics",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own analytics",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "analytics",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own analytics",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "analytics",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can do everything on analytics",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can update profiles",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'avatars'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Avatar images are publicly accessible.",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can upload their own avatars.",
+      "schemaname": "storage",
+      "with_check": "((bucket_id = 'avatars'::text) AND (auth.role() = 'authenticated'::text))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'avatars'::text) AND (auth.role() = 'authenticated'::text))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own avatars.",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'avatars'::text) AND (auth.role() = 'authenticated'::text))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own avatars.",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((auth.role() = 'authenticated'::text) OR (auth.uid() = id))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated users can view profiles",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own profile",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can do everything on profiles",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "creators",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own creators",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "creators",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own creators",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "creators",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own creators",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "creators",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own creators",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own ideas",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert their own ideas",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own ideas",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "content_ideas",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own ideas",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tasks",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can manage their own tasks",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "focus_sessions",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can manage their focus_sessions",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "calendar_events",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can manage their calendar_events",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "((auth.uid() = user_id) OR (auth.uid() = partner_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collaborations",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can manage their own collaborations",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n FROM collaborations\n WHERE ((collaborations.id = collaboration_images.collaboration_id) AND ((collaborations.user_id = auth.uid()) OR (collaborations.partner_id = auth.uid()) OR is_admin()))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "collaboration_images",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can manage their own collaboration images",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "in_app_notifications",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own notifications",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "in_app_notifications",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own notifications (mark as read)",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "in_app_notifications",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can insert notifications",
+      "schemaname": "public",
+      "with_check": "(is_admin() OR (auth.uid() = user_id))"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Tools are viewable by everyone",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Tools are insertable by admin only",
+      "schemaname": "public",
+      "with_check": "is_admin()"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Tools are updateable by admin only",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "tools",
+      "permissive": "PERMISSIVE",
+      "policyname": "Tools are deletable by admin only",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "platform_settings",
+      "permissive": "PERMISSIVE",
+      "policyname": "Settings are viewable by everyone",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "platform_settings",
+      "permissive": "PERMISSIVE",
+      "policyname": "Settings are updateable by admin only",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(is_approved = true)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "creator_reviews",
+      "permissive": "PERMISSIVE",
+      "policyname": "Approved creator reviews are viewable by everyone",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "creator_reviews",
+      "permissive": "PERMISSIVE",
+      "policyname": "Authenticated creators can insert reviews",
+      "schemaname": "public",
+      "with_check": "(auth.uid() = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "creator_reviews",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own reviews",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "creator_reviews",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own reviews",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can upload avatars",
+      "schemaname": "storage",
+      "with_check": "((bucket_id = 'avatars'::text) AND (auth.role() = 'authenticated'::text))"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(bucket_id = 'avatars'::text)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Public can view avatars",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'avatars'::text) AND ((auth.uid() = owner) OR is_admin()))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete their own avatars",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "is_conversation_participant(id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "conversations",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their conversations",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "conversations",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can create conversations",
+      "schemaname": "public",
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((user_id = auth.uid()) OR is_conversation_participant(conversation_id))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "conversation_participants",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view participants in their conversations",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "conversation_participants",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can insert participants",
+      "schemaname": "public",
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(user_id = auth.uid())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "conversation_participants",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their participant last_read_at",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "is_conversation_participant(conversation_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view messages in their conversations",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can send messages to their conversations",
+      "schemaname": "public",
+      "with_check": "((sender_id = auth.uid()) AND is_conversation_participant(conversation_id))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "is_conversation_participant(conversation_id)",
+      "roles": [
+        "public"
+      ],
+      "tablename": "messages",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update message read state in their conversations",
+      "schemaname": "public",
+      "with_check": null
+    }
+  ],
+  "profile_columns": [
+    "id",
+    "role",
+    "status",
+    "full_name",
+    "email",
+    "avatar_url",
+    "domain_industry",
+    "occupation",
+    "theme_preference",
+    "notifications_enabled",
+    "survey_completed",
+    "created_at",
+    "can_access_tools",
+    "username",
+    "bio",
+    "day_streak",
+    "work_hours",
+    "focus_sessions",
+    "points",
+    "cover_gradient",
+    "blocked_features",
+    "location",
+    "primary_platform",
+    "social_url",
+    "profile_completed"
+  ],
+  "profile_triggers": null
+}

@@ -1,3 +1,5 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { workspaceRows } from '@/lib/workspaceData';
 import './FocusRoom.css';
 import { FocusClock, ZenBackdrop, type ClockStyle } from '@/components/focus/FocusClock';
 import React, { useState, useEffect, useRef } from 'react';
@@ -22,6 +24,7 @@ const DEFAULT_SOUNDS = {
 };
 
 export default function FocusRoom() {
+  const { user } = useAuth();
   const [clockStyle, setClockStyle] = useState<ClockStyle>(() => {
     try {
       const saved = localStorage.getItem('focus_clock_style');
@@ -155,7 +158,7 @@ export default function FocusRoom() {
         return;
       }
       try {
-        const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+        const { data, error } = await workspaceRows('tasks', user?.id).order('created_at', { ascending: false });
         if (error) throw error;
         
         // Filter out tasks older than 24 hours in the UI just in case
@@ -169,7 +172,7 @@ export default function FocusRoom() {
       }
     };
     fetchTasks();
-  }, []);
+  }, [user?.id]);
 
   // ── Timer Tick ──
   useEffect(() => {

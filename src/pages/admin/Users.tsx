@@ -259,7 +259,7 @@ export default function Users() {
         </div>
       </div>
       
-      {selectedUser && <AdminUserDrawer user={selectedUser} isSelf={selectedUser.id === currentProfile.id} onClose={() => {setSelectedId(null); if(params.has('user')) {params.delete('user');setParams(params,{replace:true});}}} onDemo={async () => {await startDemoMode(selectedUser.id);navigate('/');}} onAccess={() => {setFeatureModalUser(selectedUser);setSelectedId(null);}} onRole={() => toggleUserRole(selectedUser.id,selectedUser.role)} onStatus={() => toggleUserStatus(selectedUser.id,selectedUser.status)} onDelete={() => {deleteUser(selectedUser.id);setSelectedId(null);}}/>}
+      {selectedUser && <AdminUserDrawer user={selectedUser} isSelf={selectedUser.id === currentProfile.id} onClose={() => {setSelectedId(null); if(params.has('user')) {params.delete('user');setParams(params,{replace:true});}}} onDemo={async () => {try {await startDemoMode(selectedUser.id);navigate('/');} catch {toast.error('Unable to open this user’s workspace. Please try again.');}}} onAccess={() => {setFeatureModalUser(selectedUser);setSelectedId(null);}} onRole={() => toggleUserRole(selectedUser.id,selectedUser.role)} onStatus={() => toggleUserStatus(selectedUser.id,selectedUser.status)} onDelete={() => {deleteUser(selectedUser.id);setSelectedId(null);}}/>}
       {featureModalUser && (
         <UserFeatureModal
           userId={featureModalUser.id}

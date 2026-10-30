@@ -1,3 +1,4 @@
+import { workspaceRows } from '@/lib/workspaceData';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Collaboration, CollaborationStatus, DealType, CollabPlatform } from '@/types';
@@ -16,8 +17,7 @@ import './Collaborations.css';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Collaborations() {
-  const { session } = useAuth();
-  const currentUser = session?.user;
+  const { user: currentUser } = useAuth();
   const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,14 +64,12 @@ export default function Collaborations() {
 
   useEffect(() => {
     fetchCollaborations();
-  }, []);
+  }, [currentUser?.id]);
 
   const fetchCollaborations = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('collaborations')
-        .select('*, partner:profiles!partner_id(username, full_name, avatar_url), sender:profiles!user_id(username, full_name, avatar_url)')
+      const { data, error } = await workspaceRows('collaborations', currentUser?.id, '*, partner:profiles!partner_id(username, full_name, avatar_url), sender:profiles!user_id(username, full_name, avatar_url)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

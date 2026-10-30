@@ -1,6 +1,7 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { workspaceRows } from '@/lib/workspaceData';
 import './Calendar.css';
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Collaboration } from '@/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -21,13 +22,14 @@ const FIXED_HOLIDAYS = [
 ];
 
 export default function Calendar() {
+  const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchCollaborations();
-  }, [currentDate]);
+  }, [currentDate, user?.id]);
 
   const fetchCollaborations = async () => {
     setLoading(true);
@@ -35,15 +37,12 @@ export default function Calendar() {
       const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
-      const { data, error } = await supabase
-        .from('collaborations')
-        .select('*, partner:profiles!partner_id(username, full_name, avatar_url), sender:profiles!user_id(username, full_name, avatar_url)')
+      const { data, error } = await workspaceRows('collaborations', user?.id, '*, partner:profiles!partner_id(username, full_name, avatar_url), sender:profiles!user_id(username, full_name, avatar_url)')
         .gte('posting_date', startOfMonth.toISOString().split('T')[0])
-        .lte('posting_date', endOfMonth.toISOString().split('T')[0])
-        .or('partner_status.eq.accepted,partner_status.is.null,partner_id.is.null');
+        .lte('posting_date', endOfMonth.toISOString().split('T')[0]);
 
       if (error) throw error;
-      setCollaborations(data || []);
+      setCollaborations((data || []).filter(row => row.partner_status === 'accepted' || row.partner_status == null || row.partner_id == null));
     } catch (err) {
       console.error('Failed to load collaborations for calendar:', err);
     } finally {

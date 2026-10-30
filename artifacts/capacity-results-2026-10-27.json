@@ -1,0 +1,128 @@
+{
+  "testedAt": "2026-10-27T14:30:27.002Z",
+  "origin": "https://www.boostd.app",
+  "stages": [
+    {
+      "name": "Public HTML routes",
+      "concurrency": 1,
+      "completed": 5,
+      "status": {
+        "200": 5
+      },
+      "caches": {
+        "HIT": 2,
+        "MISS": 3
+      },
+      "durationMs": 1113,
+      "requestsPerSecond": 4.5,
+      "medianMs": 247,
+      "p95Ms": 303,
+      "maxMs": 303,
+      "errors": []
+    },
+    {
+      "name": "Public HTML routes",
+      "concurrency": 5,
+      "completed": 25,
+      "status": {
+        "200": 25
+      },
+      "caches": {
+        "HIT": 25
+      },
+      "durationMs": 599,
+      "requestsPerSecond": 41.7,
+      "medianMs": 71,
+      "p95Ms": 319,
+      "maxMs": 324,
+      "errors": []
+    },
+    {
+      "name": "Public HTML routes",
+      "concurrency": 20,
+      "completed": 100,
+      "status": {
+        "200": 100
+      },
+      "caches": {
+        "HIT": 100
+      },
+      "durationMs": 591,
+      "requestsPerSecond": 169.1,
+      "medianMs": 74,
+      "p95Ms": 223,
+      "maxMs": 230,
+      "errors": []
+    },
+    {
+      "name": "Public JS/CSS assets",
+      "concurrency": 4,
+      "completed": 4,
+      "status": {
+        "200": 4
+      },
+      "caches": {
+        "MISS": 4
+      },
+      "durationMs": 370,
+      "requestsPerSecond": 10.8,
+      "medianMs": 281,
+      "p95Ms": 370,
+      "maxMs": 370,
+      "errors": []
+    },
+    {
+      "name": "Creator API serverless fallback (no external scraping)",
+      "concurrency": 3,
+      "completed": 9,
+      "status": {
+        "200": 9
+      },
+      "caches": {
+        "MISS": 9
+      },
+      "durationMs": 880,
+      "requestsPerSecond": 10.2,
+      "medianMs": 292,
+      "p95Ms": 407,
+      "maxMs": 407,
+      "errors": []
+    },
+    {
+      "name": "Anonymous feature-flags read (not authenticated workload)",
+      "concurrency": 3,
+      "completed": 12,
+      "status": {
+        "200": 12
+      },
+      "caches": {},
+      "durationMs": 829,
+      "requestsPerSecond": 14.5,
+      "medianMs": 169,
+      "p95Ms": 416,
+      "maxMs": 416,
+      "errors": []
+    }
+  ],
+  "bytesDownloaded": 1086416,
+  "limits": {
+    "maxConcurrency": 20,
+    "maxRequests": 200,
+    "maxBytes": 8000000,
+    "timeoutMs": 8000
+  },
+  "stopped": false,
+  "baseline": {
+    "status": 200,
+    "ms": 1186,
+    "cache": "MISS"
+  },
+  "video": {
+    "status": 200,
+    "bytes": 13945880,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  "requests": 157,
+  "elapsedMs": 6346
+}

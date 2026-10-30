@@ -39,7 +39,7 @@ import { FeatureProvider, FeatureGuard } from '@/contexts/FeatureContext';
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
   const isConfigured = isSupabaseConfigured();
-  const { session, profile, loading } = useAuth();
+  const { session, profile, loading, isDemoMode } = useAuth();
   const location = useLocation();
   
   if (!isConfigured) {
@@ -107,7 +107,6 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
   }
 
   // Prevent admin from accessing normal user routes, UNLESS in demo mode
-  const { isDemoMode } = useAuth();
   if (profile?.role === 'admin' && !location.pathname.startsWith('/admin') && !isDemoMode) {
     return <Navigate to="/admin" replace />;
   }

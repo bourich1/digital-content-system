@@ -1,17 +1,13 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig} from 'vite';
 import creatorProfileHandler from './api/creator-profile';
 
-export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
+export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss(), { name: 'creator-profile-preview', configureServer(server) { server.middlewares.use('/api/creator-profile', creatorProfileHandler); }, configurePreviewServer(server) { server.middlewares.use('/api/creator-profile', creatorProfileHandler); } }],
     build: { manifest: true },
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

@@ -145,7 +145,7 @@ export const Layout = ({ children }: LayoutProps) => {
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
             <span className="font-medium">
-              Demo Mode Active: Viewing as {profile?.full_name || profile?.email || 'User'} (Read-Only)
+              Viewing as {profile?.full_name || profile?.email || 'User'} (Read-Only)
             </span>
           </div>
           <Button 
@@ -157,7 +157,7 @@ export const Layout = ({ children }: LayoutProps) => {
             }}
             className="bg-white/20 hover:bg-white/30 border-none text-white shadow-none"
           >
-            Exit Demo Mode
+            Exit preview
           </Button>
         </div>
       )}

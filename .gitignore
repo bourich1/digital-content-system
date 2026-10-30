@@ -6,3 +6,5 @@ coverage/
 *.log
 .env*
 !.env.example
+maintenance-dist/
+artifacts/security-2026-10-30/tools/

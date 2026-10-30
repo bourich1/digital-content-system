@@ -1,29 +1,20 @@
 -- =============================================================================
--- STORAGE BUCKETS & POLICIES
+-- STORAGE — avatars bucket
 -- =============================================================================
--- Run this in the Supabase SQL Editor (NOT raw SQL — storage requires dashboard)
+-- Run in the Supabase SQL editor (storage lives outside the public schema).
+-- This file creates the bucket only. Size/MIME limits and the owner-scoped
+-- policies are applied by supabase/migrations/006_avatars_bucket_hardening.sql,
+-- which is the single source of truth for avatar access rules.
+-- Uploads must be stored under `<auth.uid()>/<file>`.
 -- =============================================================================
 
--- ── Avatars Bucket ───────────────────────────────────────────────────────────
 insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
 on conflict (id) do nothing;
 
--- Allow authenticated users to upload avatars
-drop policy if exists "Users can upload avatars" on storage.objects;
-create policy "Users can upload avatars" on storage.objects
-  for insert with check (
-    bucket_id = 'avatars' and auth.role() = 'authenticated'
-  );
+update storage.buckets
+set file_size_limit    = 3145728,
+    allowed_mime_types = array['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+where id = 'avatars';
 
--- Allow public read access (avatars are public images)
-drop policy if exists "Public can view avatars" on storage.objects;
-create policy "Public can view avatars" on storage.objects
-  for select using (bucket_id = 'avatars');
-
--- Allow users to delete their own uploaded avatars
-drop policy if exists "Users can delete their own avatars" on storage.objects;
-create policy "Users can delete their own avatars" on storage.objects
-  for delete using (
-    bucket_id = 'avatars' and auth.uid() = owner
-  );
+-- Then run supabase/migrations/006_avatars_bucket_hardening.sql

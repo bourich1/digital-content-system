@@ -1,3 +1,5 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { workspaceRows } from '@/lib/workspaceData';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -15,13 +17,14 @@ interface Task {
 }
 
 export default function Tasks() {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [user?.id]);
 
   const fetchTasks = async () => {
     setIsLoading(true);
@@ -43,9 +46,7 @@ export default function Tasks() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
+      const { data, error } = await workspaceRows('tasks', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

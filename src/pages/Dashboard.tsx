@@ -27,6 +27,8 @@ import { Creator, ContentIdea, IdeaStatus, Collaboration } from '@/types';
 import { DailyQuoteBanner } from '@/components/DailyQuoteBanner';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { workspaceRows } from '@/lib/workspaceData';
 
 interface Task {
   id: string;
@@ -57,6 +59,7 @@ const STATUS_ORDER: IdeaStatus[] = ['Idea', 'Script', 'Filmed', 'Edited', 'Ready
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user, isDemoMode } = useAuth();
   const [creators, setCreators] = useState<Creator[]>([]);
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -64,91 +67,42 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+    let active = true;
+    setIdeas([]); setTasks([]); setCollaborations([]); setCreators([]);
+    if (!user?.id) { setLoading(false); return; }
     setLoading(true);
-
-    // 1. Load Creators
-    const savedCreators = localStorage.getItem('content_circle_creators');
-    if (savedCreators) {
-      try {
-        setCreators(JSON.parse(savedCreators));
-      } catch (e) {
-        console.error(e);
-      }
+    // Creators are currently browser-local, so the admin's list is not a
+    // representation of the selected member's workspace.
+    if (!isDemoMode) {
+      try { setCreators(JSON.parse(localStorage.getItem('content_circle_creators') || '[]')); }
+      catch { setCreators([]); }
     }
-
-    // 2. Load Ideas (Supabase or LocalStorage fallback)
-    if (isSupabaseConfigured()) {
+    void (async () => {
       try {
-        const { data: ideasData } = await supabase
-          .from('content_ideas')
-          .select('*')
-          .order('created_at', { ascending: false });
-        if (ideasData && ideasData.length > 0) {
-          setIdeas(ideasData);
-        } else {
-          const savedIdeas = localStorage.getItem('content_circle_ideas');
-          if (savedIdeas) setIdeas(JSON.parse(savedIdeas));
+        const [ideasResult, tasksResult, collabsResult] = await Promise.all([
+          workspaceRows('content_ideas', user.id).order('created_at', { ascending: false }),
+          workspaceRows('tasks', user.id).order('created_at', { ascending: false }),
+          workspaceRows('collaborations', user.id).order('created_at', { ascending: false }),
+        ]);
+        if (!active) return;
+        for (const result of [ideasResult, tasksResult, collabsResult]) {
+          if (result.error) throw result.error;
         }
-      } catch (e) {
-        const savedIdeas = localStorage.getItem('content_circle_ideas');
-        if (savedIdeas) setIdeas(JSON.parse(savedIdeas));
+        // Empty is authoritative. Never substitute another account's cache.
+        setIdeas((ideasResult.data || []) as unknown as ContentIdea[]);
+        setTasks((tasksResult.data || []) as unknown as Task[]);
+        setCollaborations((collabsResult.data || []) as unknown as Collaboration[]);
+      } catch {
+        if (active) toast.error('Failed to load this user’s dashboard. Please try again.');
+      } finally {
+        if (active) setLoading(false);
       }
-    } else {
-      const savedIdeas = localStorage.getItem('content_circle_ideas');
-      if (savedIdeas) setIdeas(JSON.parse(savedIdeas));
-    }
-
-    // 3. Load Tasks (Supabase or LocalStorage fallback)
-    if (isSupabaseConfigured()) {
-      try {
-        const { data: tasksData } = await supabase
-          .from('tasks')
-          .select('*')
-          .order('created_at', { ascending: false });
-        if (tasksData) {
-          setTasks(tasksData);
-        }
-      } catch (e) {
-        const mockTasks = localStorage.getItem('mock_tasks');
-        if (mockTasks) setTasks(JSON.parse(mockTasks));
-      }
-    } else {
-      const mockTasks = localStorage.getItem('mock_tasks');
-      if (mockTasks) {
-        setTasks(JSON.parse(mockTasks));
-      } else {
-        const initialTasks: Task[] = [
-          { id: '1', title: 'Record vlog intro', is_completed: false, created_at: new Date().toISOString() },
-          { id: '2', title: 'Reply to sponsor email', is_completed: true, created_at: new Date().toISOString() }
-        ];
-        setTasks(initialTasks);
-        localStorage.setItem('mock_tasks', JSON.stringify(initialTasks));
-      }
-    }
-
-    // 4. Load Collaborations (Supabase or LocalStorage fallback)
-    if (isSupabaseConfigured()) {
-      try {
-        const { data: collabsData } = await supabase
-          .from('collaborations')
-          .select('*')
-          .order('created_at', { ascending: false });
-        if (collabsData) {
-          setCollaborations(collabsData);
-        }
-      } catch (e) {
-        console.error('Error fetching collaborations:', e);
-      }
-    }
-
-    setLoading(false);
-  };
+    })();
+    return () => { active = false; };
+  }, [user?.id, isDemoMode]);
 
   const toggleTaskCompletion = async (taskId: string, currentStatus: boolean) => {
+    if (isDemoMode) { toast.error('View as user is read-only.'); return; }
     const newStatus = !currentStatus;
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, is_completed: newStatus } : t));
 

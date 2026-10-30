@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
-import { toast } from 'sonner';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { setPreviewUserId } from '@/lib/previewTransport';
 
 export interface Profile {
   id: string;
@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [impersonatedUserId, setImpersonatedUserId] = useState<string | null>(null);
   const [impersonatedProfile, setImpersonatedProfile] = useState<Profile | null>(null);
   const [loadingDemo, setLoadingDemo] = useState(false);
+  const previewRequest = useRef(0);
 
   const fetchProfile = async (userId: string, shouldApply: () => boolean = () => true) => {
     try {
@@ -87,35 +88,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = async () => {
     if (impersonatedUserId) {
+      const request = previewRequest.current;
       const { data } = await supabase.from('profiles').select('*').eq('id', impersonatedUserId).single();
-      if (data) setImpersonatedProfile(data);
+      if (data && request === previewRequest.current) setImpersonatedProfile(data);
     } else if (user) {
       await fetchProfile(user.id);
     }
   };
 
   const startDemoMode = async (userId: string) => {
+    if (profile?.role !== 'admin') throw new Error('Administrator access required');
+    const request = ++previewRequest.current;
     setLoadingDemo(true);
-    setImpersonatedUserId(userId);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      if (!error && data) {
-        setImpersonatedProfile(data);
-      }
-    } catch (error) {
-      console.error('Failed to start demo mode:', error);
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (error || !data) throw error || new Error('User profile unavailable');
+      if (request !== previewRequest.current) throw new Error('Preview cancelled');
+      setPreviewUserId(userId);
+      setImpersonatedProfile(data);
+      setImpersonatedUserId(userId);
+    } finally {
+      if (request === previewRequest.current) setLoadingDemo(false);
     }
-    setLoadingDemo(false);
   };
 
   const exitDemoMode = () => {
+    ++previewRequest.current;
+    setPreviewUserId(null);
     setImpersonatedUserId(null);
     setImpersonatedProfile(null);
+    setLoadingDemo(false);
   };
 
   useEffect(() => {
@@ -126,33 +128,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // --- Demo Mode Fetch Interceptor ---
-    const originalFetch = window.fetch;
-    window.fetch = async (...args) => {
-      const [resource, config] = args;
-      const url = typeof resource === 'string' ? resource : resource instanceof Request ? resource.url : '';
-      const method = config?.method || (resource instanceof Request ? resource.method : 'GET');
-      
-      // If we are in demo mode and trying to mutate data via Supabase API
-      if (impersonatedUserId && url.includes('.supabase.co') && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(method.toUpperCase())) {
-        toast.error('Action blocked: You are in Demo Mode (Read-Only)');
-        // Return a dummy successful-looking response to prevent the app from crashing,
-        // or a 403. Let's return a 403 to trigger standard error handling.
-        return new Response(JSON.stringify({ message: 'Read-only mode' }), { 
-          status: 403, 
-          headers: { 'Content-Type': 'application/json' } 
-        });
-      }
-      
-      return originalFetch(...args);
-    };
-
     // Keep auth callbacks synchronous: Supabase emits them while holding its lock.
     // Profile queries run in the separate effect below, after this callback returns.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, nextSession) => {
       if (!mounted) return;
       const nextUserId = nextSession?.user.id ?? null;
       if (authUserId.current !== nextUserId) {
+        exitDemoMode();
         setProfile(null);
         setLoading(!!nextUserId);
         authUserId.current = nextUserId;
@@ -165,9 +147,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
       subscription.unsubscribe();
-      window.fetch = originalFetch; // Restore original fetch
+      setPreviewUserId(null);
+      ++previewRequest.current;
     };
-  }, [impersonatedUserId]);
+  }, []);
 
   useEffect(() => {
     if (!authReady) return;
@@ -198,7 +181,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       startDemoMode,
       exitDemoMode
     }}>
-      {children}
+      <React.Fragment key={`${activeUser?.id || 'signed-out'}:${isDemoMode}`}>
+        {children}
+      </React.Fragment>
     </AuthContext.Provider>
   );
 }

@@ -1,0 +1,111 @@
+{
+  "testedAt": "2026-10-27T14:25:21.264Z",
+  "origin": "https://www.boostd.app",
+  "stages": [
+    {
+      "name": "Public HTML routes",
+      "concurrency": 1,
+      "completed": 5,
+      "status": {
+        "200": 5
+      },
+      "caches": {
+        "HIT": 2,
+        "MISS": 3
+      },
+      "durationMs": 1478,
+      "requestsPerSecond": 3.4,
+      "medianMs": 324,
+      "p95Ms": 406,
+      "maxMs": 406,
+      "errors": []
+    },
+    {
+      "name": "Public HTML routes",
+      "concurrency": 5,
+      "completed": 25,
+      "status": {
+        "200": 25
+      },
+      "caches": {
+        "HIT": 25
+      },
+      "durationMs": 507,
+      "requestsPerSecond": 49.3,
+      "medianMs": 70,
+      "p95Ms": 228,
+      "maxMs": 242,
+      "errors": []
+    },
+    {
+      "name": "Public HTML routes",
+      "concurrency": 20,
+      "completed": 100,
+      "status": {
+        "200": 100
+      },
+      "caches": {
+        "HIT": 100
+      },
+      "durationMs": 505,
+      "requestsPerSecond": 197.9,
+      "medianMs": 72,
+      "p95Ms": 231,
+      "maxMs": 274,
+      "errors": []
+    },
+    {
+      "name": "Public JS/CSS assets",
+      "concurrency": 4,
+      "completed": 4,
+      "status": {
+        "200": 4
+      },
+      "caches": {
+        "MISS": 4
+      },
+      "durationMs": 257,
+      "requestsPerSecond": 15.6,
+      "medianMs": 246,
+      "p95Ms": 256,
+      "maxMs": 256,
+      "errors": []
+    },
+    {
+      "name": "Anonymous feature-flags read (not authenticated workload)",
+      "concurrency": 3,
+      "completed": 12,
+      "status": {
+        "200": 12
+      },
+      "caches": {},
+      "durationMs": 1285,
+      "requestsPerSecond": 9.3,
+      "medianMs": 193,
+      "p95Ms": 753,
+      "maxMs": 753,
+      "errors": []
+    }
+  ],
+  "bytesDownloaded": 1085039,
+  "limits": {
+    "maxConcurrency": 20,
+    "maxRequests": 200,
+    "maxBytes": 8000000,
+    "timeoutMs": 8000
+  },
+  "stopped": false,
+  "baseline": {
+    "status": 200,
+    "ms": 799,
+    "cache": "MISS"
+  },
+  "video": {
+    "status": 200,
+    "bytes": 13945880,
+    "cache": "MISS",
+    "cacheControl": "public, max-age=0, must-revalidate"
+  },
+  "requests": 148,
+  "elapsedMs": 5372
+}

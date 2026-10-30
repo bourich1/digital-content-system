@@ -1,3 +1,4 @@
+import { useAuth } from '@/contexts/AuthContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { parseProfileLink } from '@/lib/creatorProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -14,14 +15,16 @@ import { toast } from 'sonner';
 const initialCreators: Creator[] = [];
 
 export default function Creators() {
+  const { isDemoMode } = useAuth();
   const [creators, setCreators] = useState<Creator[]>(() => {
+    if (isDemoMode) return [];
     const saved = localStorage.getItem('content_circle_creators');
     return saved ? JSON.parse(saved) : initialCreators;
   });
 
   useEffect(() => {
-    localStorage.setItem('content_circle_creators', JSON.stringify(creators));
-  }, [creators]);
+    if (!isDemoMode) localStorage.setItem('content_circle_creators', JSON.stringify(creators));
+  }, [creators, isDemoMode]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,6 +139,8 @@ export default function Creators() {
       default: return <ExternalLink className="w-5 h-5 text-zinc-400" />;
     }
   };
+
+  if (isDemoMode) return <div className="p-8"><h1 className="text-2xl font-semibold">Creators</h1><p className="mt-3 text-zinc-400">Creators are stored on the member’s device and are unavailable in this read-only preview.</p></div>;
 
   return (
     <div className="space-y-6">

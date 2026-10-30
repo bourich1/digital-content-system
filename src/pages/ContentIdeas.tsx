@@ -1,3 +1,5 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { workspaceRows } from '@/lib/workspaceData';
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -32,6 +34,7 @@ const getFaviconUrl = (url?: string) => {
 };
 
 export default function ContentIdeas() {
+  const { user, isDemoMode } = useAuth();
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,8 +44,8 @@ export default function ContentIdeas() {
 
   useEffect(() => {
     fetchIdeas();
-    checkLocalIdeas();
-  }, []);
+    if (!isDemoMode) checkLocalIdeas();
+  }, [user?.id, isDemoMode]);
 
   const checkLocalIdeas = () => {
     try {
@@ -59,7 +62,7 @@ export default function ContentIdeas() {
   };
 
   const migrateLocalIdeas = async () => {
-    if (!isSupabaseConfigured() || localIdeasToMigrate.length === 0) return;
+    if (isDemoMode || !isSupabaseConfigured() || localIdeasToMigrate.length === 0) return;
     
     setIsMigrating(true);
     try {
@@ -102,9 +105,7 @@ export default function ContentIdeas() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('content_ideas')
-        .select('*')
+      const { data, error } = await workspaceRows('content_ideas', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
