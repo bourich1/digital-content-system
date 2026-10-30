@@ -14,6 +14,9 @@ const ContentIdeas = lazy(() => import('@/pages/ContentIdeas'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const AccountSettings = lazy(() => import('@/pages/AccountSettings'));
 const SecuritySettings = lazy(() => import('@/pages/SecuritySettings'));
+const MfaSetup = lazy(() => import('@/pages/mfa/MfaSetup'));
+const MfaVerify = lazy(() => import('@/pages/mfa/MfaVerify'));
+const AdminSecurity = lazy(() => import('@/pages/admin/Security'));
 const SettingsShell = lazy(() => import('@/components/SettingsShell'));
 const SharedProfile = lazy(() => import('@/pages/SharedProfile'));
 const Collaborations = lazy(() => import('@/pages/Collaborations'));
@@ -34,27 +37,45 @@ const Privacy = lazy(() => import('@/pages/Privacy'));
 const Terms = lazy(() => import('@/pages/Terms'));
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { MfaProvider, useMfa } from '@/contexts/MfaContext';
+import { decideAccess } from '@/lib/adminAccess';
 import { FeatureProvider, FeatureGuard } from '@/contexts/FeatureContext';
 
 // Protected Route Wrapper
+const GateScreen = () => <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
+
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
   const isConfigured = isSupabaseConfigured();
   const { session, profile, loading, isDemoMode } = useAuth();
+  const { loading: mfaLoading, currentLevel, nextLevel } = useMfa();
   const location = useLocation();
+
+  // Every authorization decision lives in decideAccess() so it can be verified
+  // without a browser; see scripts/mfa-guard-check.ts.
+  const decision = decideAccess({
+    configured: isConfigured,
+    loading,
+    hasSession: !!session,
+    role: profile?.role ?? null,
+    status: profile?.status ?? null,
+    surveyCompleted: !!profile?.survey_completed,
+    requireAdmin,
+    pathname: location.pathname,
+    isDemoMode,
+    mfaLoading,
+    currentLevel,
+    nextLevel,
+  });
   
-  if (!isConfigured) {
+  if (decision.kind === 'login') {
     return <Navigate to="/login" replace />;
   }
 
-  if (loading) {
-    return <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
+  if (decision.kind === 'loading') {
+    return <GateScreen />;
   }
 
-  if (!session) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (profile?.status === 'suspended') {
+  if (decision.kind === 'suspended') {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-4">
         {/* @ts-ignore - Lord icon web component */}
@@ -96,27 +117,31 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
     );
   }
 
-  // Force onboarding if not completed, not an admin, and not currently on the onboarding page
-  if (profile && profile.role !== 'admin' && !profile.survey_completed && location.pathname !== '/onboarding') {
+  if (decision.kind === 'onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Admin only routes
-  if (requireAdmin && profile?.role !== 'admin') {
+  if (decision.kind === 'home') {
     return <Navigate to="/" replace />;
   }
 
-  // Prevent admin from accessing normal user routes, UNLESS in demo mode
-  if (profile?.role === 'admin' && !location.pathname.startsWith('/admin') && !isDemoMode) {
+  if (decision.kind === 'mfa-enroll') {
+    return <Navigate to="/security/mfa/setup" replace state={{ from: location.pathname }} />;
+  }
+
+  if (decision.kind === 'mfa-verify') {
+    return <Navigate to="/security/mfa/verify" replace state={{ from: location.pathname }} />;
+  }
+
+  if (decision.kind === 'admin-home') {
     return <Navigate to="/admin" replace />;
   }
 
-  // Don't render layout for onboarding
-  if (location.pathname === '/onboarding') {
+  if (decision.kind === 'allow') {
     return <>{children}</>;
   }
 
-  if (location.pathname.startsWith('/admin')) {
+  if (decision.kind === 'admin-layout') {
     return <AdminLayout>{children}</AdminLayout>;
   }
 
@@ -138,6 +163,8 @@ function AppRoutes() {
       
       <Route path="/u/:username" element={<SharedProfile />} />
       <Route path="/settings/security" element={<ProtectedRoute><SettingsShell><SecuritySettings /></SettingsShell></ProtectedRoute>} />
+      <Route path="/security/mfa/setup" element={<ProtectedRoute><MfaSetup /></ProtectedRoute>} />
+      <Route path="/security/mfa/verify" element={<ProtectedRoute><MfaVerify /></ProtectedRoute>} />
       
       <Route path="/settings/account" element={<ProtectedRoute><SettingsShell><AccountSettings /></SettingsShell></ProtectedRoute>} />
       <Route path="/privacy" element={<Privacy />} />
@@ -281,6 +308,12 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
+      <Route path="/admin/security" element={
+        <ProtectedRoute requireAdmin={true}>
+          <AdminSecurity />
+        </ProtectedRoute>
+      } />
+
       <Route path="/admin/*" element={
         <ProtectedRoute requireAdmin={true}>
           <AdminDashboard />
@@ -295,6 +328,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
+      <MfaProvider>
       <FeatureProvider>
         <Router>
           <Toaster position="top-right" theme="dark" />
@@ -305,6 +339,7 @@ export default function App() {
           </Suspense>
         </Router>
       </FeatureProvider>
+      </MfaProvider>
     </AuthProvider>
   );
 }

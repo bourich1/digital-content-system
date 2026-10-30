@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Wrench,
+  ShieldCheck,
   PanelLeftClose,
   PanelLeftOpen
 } from 'lucide-react';
@@ -67,6 +68,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     { icon: ToggleLeft, label: 'Feature Flags', path: '/admin/settings' },
     { icon: ClipboardList, label: 'Survey Analytics', path: '/admin/surveys' },
     { icon: MessageSquare, label: 'Support Inbox', path: '/admin/support' },
+    { icon: ShieldCheck, label: 'Security', path: '/admin/security' },
   ];
 
   return (
