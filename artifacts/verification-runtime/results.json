@@ -1,0 +1,663 @@
+{
+  "summary": {
+    "scope": "Database authorization simulation; structural checks labeled in details",
+    "fail_count": 1,
+    "pass_count": 95,
+    "legacy_tables": "FAIL",
+    "verified_rpcs": "PASS",
+    "rpc_rate_limits": "PASS",
+    "collaboration_idor": "PASS",
+    "manual_check_count": 10,
+    "impersonation_audit": "PASS",
+    "transaction_outcome": "ROLLBACK (next statement)",
+    "admin_audit_coverage": "PASS",
+    "migration_008_loaded": "PASS",
+    "admin_aal2_enforcement": "PASS",
+    "profile_business_fields": "PASS",
+    "support_sender_integrity": "PASS",
+    "runtime_mfa_and_storage_api": "MANUAL_CHECK",
+    "collaboration_images_security": "PASS"
+  },
+  "details": [
+    {
+      "test_id": "T00.safe_write_preflight",
+      "category": "preflight",
+      "result": "PASS",
+      "detail": "No unknown enabled application triggers on relations touched by runtime probes. Review custom replacements of known functions before running."
+    },
+    {
+      "test_id": "T01.admin",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T01.user",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T02.aal1_cross_user_update",
+      "category": "admin_aal2_enforcement",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T02.aal1_private_read",
+      "category": "admin_aal2_enforcement",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T02.aal1_protected_update",
+      "category": "admin_aal2_enforcement",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Two-factor authentication is required to change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T02.aal2_authorized_update",
+      "category": "admin_aal2_enforcement",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T02.admin_aal1_predicate",
+      "category": "admin_aal2_enforcement",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T02.admin_aal2_predicate",
+      "category": "admin_aal2_enforcement",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T02.user_even_aal2",
+      "category": "admin_aal2_enforcement",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.fixture",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Two synthetic rows created; only these IDs may be deleted. Outer ROLLBACK removes fixtures/notifications."
+    },
+    {
+      "test_id": "T03.forged_owner_insert",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: new row violates row-level security policy for table \"collaborations\" [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T03.owner_delete_fixture",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.owner_not_partner_rpc",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Not authorized [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T03.owner_read",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.owner_update",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.partner_delete_denied",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.partner_direct_status_denied",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.partner_owner_fields_denied",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.partner_ownership_transfer_denied",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.partner_read",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.partner_rpc_accept",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T03.partner_rpc_decline_fixture",
+      "category": "collaboration_idor",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T04.admin_aal1_reply",
+      "category": "support_sender_integrity",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: new row violates row-level security policy for table \"support_messages\" [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T04.admin_aal2_reply",
+      "category": "support_sender_integrity",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T04.admin_aal2_still_cannot_forge_sender",
+      "category": "support_sender_integrity",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: new row violates row-level security policy for table \"support_messages\" [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T04.forged_sender",
+      "category": "support_sender_integrity",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: new row violates row-level security policy for table \"support_messages\" [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T04.normal_sender_control",
+      "category": "support_sender_integrity",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T05.blocked_features",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.can_access_tools",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.day_streak",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.focus_sessions",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.ordinary_update_control",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T05.points",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.role",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.status",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.survey_completed",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T05.work_hours",
+      "category": "profile_business_fields",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Only administrators can change protected profile fields [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T06.complete_onboarding",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T07.invalid_-1",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "SQLSTATE 22023: Invalid session duration [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T07.invalid_0",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "SQLSTATE 22023: Invalid session duration [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T07.invalid_301",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "SQLSTATE 22023: Invalid session duration [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T07.invalid_null",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "SQLSTATE 22023: Invalid session duration [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T07.valid_300_boundary",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T07.valid_60_minutes",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T08.aal1_admin_award_denied",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Two-factor authentication is required to award points [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T08.aal2_admin_award",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T08.user_award_denied",
+      "category": "verified_rpcs",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Two-factor authentication is required to award points [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T09.counter_table",
+      "category": "rpc_rate_limits",
+      "result": "PASS",
+      "detail": "RLS, client write revocations and unique (user_id, operation) key required."
+    },
+    {
+      "test_id": "T09.definition.get_or_create_direct_conversation",
+      "category": "rpc_rate_limits",
+      "result": "PASS",
+      "detail": "Definition inspection: authenticated, atomic per-user operation counter, minute window, threshold 20, SQLSTATE 53400. No throttle traffic generated."
+    },
+    {
+      "test_id": "T09.definition.get_profiles_by_usernames",
+      "category": "rpc_rate_limits",
+      "result": "PASS",
+      "detail": "Definition inspection: authenticated, atomic per-user operation counter, minute window, threshold 30, SQLSTATE 53400. No throttle traffic generated."
+    },
+    {
+      "test_id": "T09.definition.respond_to_collaboration",
+      "category": "rpc_rate_limits",
+      "result": "PASS",
+      "detail": "Definition inspection: authenticated, atomic per-user operation counter, minute window, threshold 20, SQLSTATE 53400. No throttle traffic generated."
+    },
+    {
+      "test_id": "T09.operational_limit",
+      "category": "rpc_rate_limits_runtime",
+      "result": "MANUAL_CHECK",
+      "detail": "No burst test. Review thresholds against traffic requirements. An RPC exception rolls back its own counter increment; failed calls may not consume quota."
+    },
+    {
+      "test_id": "T10.aal1_foreign_delete_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.aal2_foreign_delete_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.bucket",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Bucket must exist."
+    },
+    {
+      "test_id": "T10.collab_images_delete_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Restrictive guard, correct command/roles, scoped bucket and identity condition required; inspect definitions below too."
+    },
+    {
+      "test_id": "T10.collab_images_insert_path_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Restrictive guard, correct command/roles, scoped bucket and identity condition required; inspect definitions below too."
+    },
+    {
+      "test_id": "T10.collab_images_update_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Restrictive guard, correct command/roles, scoped bucket and identity condition required; inspect definitions below too."
+    },
+    {
+      "test_id": "T10.foreign_update_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.mime",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Exact allowed MIME set, no extra types."
+    },
+    {
+      "test_id": "T10.owner_delete_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.owner_update_guard",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.path_foreign_folder",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.path_own_folder",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.path_root_denied",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T10.size",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Exactly 5 MiB (5,242,880 bytes), matching 008."
+    },
+    {
+      "test_id": "T10.storage_api",
+      "category": "storage_api_runtime",
+      "result": "MANUAL_CHECK",
+      "detail": "Catalog checks only. Actual size/MIME enforcement, permissive insert policy and uploads require a disposable Storage API test. No files touched."
+    },
+    {
+      "test_id": "T10.storage_rls",
+      "category": "collaboration_images_security",
+      "result": "PASS",
+      "detail": "Storage RLS must be enabled."
+    },
+    {
+      "test_id": "T11.ads",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.categories",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.content_items",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.coupons",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.order_items",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.orders",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.product_images",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.product_variants",
+      "category": "legacy_tables",
+      "result": "MANUAL_CHECK",
+      "detail": "Table absent; 008 intentionally skips missing legacy tables."
+    },
+    {
+      "test_id": "T11.products",
+      "category": "legacy_tables",
+      "result": "FAIL",
+      "detail": "Unsafe plain is_admin() policies remain: products_admin_only"
+    },
+    {
+      "test_id": "T12.aal1_end_impersonation",
+      "category": "impersonation_audit",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Two-factor authentication is required [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T12.aal1_start_impersonation",
+      "category": "impersonation_audit",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Two-factor authentication is required to view as user [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T12.aal2_start_exit_audit",
+      "category": "impersonation_audit",
+      "result": "PASS",
+      "detail": "Assertion met; probe changes rolled back."
+    },
+    {
+      "test_id": "T12.user_end_impersonation",
+      "category": "impersonation_audit",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Two-factor authentication is required [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T12.user_start_impersonation",
+      "category": "impersonation_audit",
+      "result": "PASS",
+      "detail": "SQLSTATE 42501: Two-factor authentication is required to view as user [all probe writes rolled back]"
+    },
+    {
+      "test_id": "T13.audit_feature_flags",
+      "category": "admin_audit_coverage",
+      "result": "PASS",
+      "detail": "Must match migration 008 event mask, enabled BEFORE ROW writer and expected WHEN condition."
+    },
+    {
+      "test_id": "T13.audit_platform_settings",
+      "category": "admin_audit_coverage",
+      "result": "PASS",
+      "detail": "Must match migration 008 event mask, enabled BEFORE ROW writer and expected WHEN condition."
+    },
+    {
+      "test_id": "T13.audit_profile_delete",
+      "category": "admin_audit_coverage",
+      "result": "PASS",
+      "detail": "Must match migration 008 event mask, enabled BEFORE ROW writer and expected WHEN condition."
+    },
+    {
+      "test_id": "T13.audit_profile_privileged_changes",
+      "category": "admin_audit_coverage",
+      "result": "PASS",
+      "detail": "Must match migration 008 event mask, enabled BEFORE ROW writer and expected WHEN condition."
+    },
+    {
+      "test_id": "T13.audit_reports",
+      "category": "admin_audit_coverage",
+      "result": "PASS",
+      "detail": "Must match migration 008 event mask, enabled BEFORE ROW writer and expected WHEN condition."
+    },
+    {
+      "test_id": "T13.audit_tools",
+      "category": "admin_audit_coverage",
+      "result": "PASS",
+      "detail": "Must match migration 008 event mask, enabled BEFORE ROW writer and expected WHEN condition."
+    },
+    {
+      "test_id": "T14.award_points(uuid,integer,text)",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.complete_onboarding(jsonb)",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.end_impersonation(uuid)",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.get_or_create_direct_conversation(uuid)",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.get_profiles_by_usernames(text[])",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.guard_profile_security_fields()",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.profile_guard_trigger",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Protected-field guard must be attached and enabled for ordinary UPDATE statements."
+    },
+    {
+      "test_id": "T14.record_focus_session(integer)",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.respond_to_collaboration(uuid,text)",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.rls.collaboration_images",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "RLS must be enabled."
+    },
+    {
+      "test_id": "T14.rls.collaborations",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "RLS must be enabled."
+    },
+    {
+      "test_id": "T14.rls.focus_sessions",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "RLS must be enabled."
+    },
+    {
+      "test_id": "T14.rls.profiles",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "RLS must be enabled."
+    },
+    {
+      "test_id": "T14.rls.rpc_rate_limit",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "RLS must be enabled."
+    },
+    {
+      "test_id": "T14.rls.support_messages",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "RLS must be enabled."
+    },
+    {
+      "test_id": "T14.start_impersonation(uuid)",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    },
+    {
+      "test_id": "T14.verify_admin_access()",
+      "category": "migration_008_loaded",
+      "result": "PASS",
+      "detail": "Requires exact function, expected SECURITY mode, pinned search_path, authenticated EXECUTE and no anonymous EXECUTE for RPCs."
+    }
+  ],
+  "rollback_verified": true,
+  "negative_control_verified": true,
+  "missing_accounts_verified": true,
+  "unknown_trigger_safety_verified": true
+}
