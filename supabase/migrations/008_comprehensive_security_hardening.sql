@@ -501,7 +501,7 @@ end;
 $$;
 
 -- get_profiles_by_usernames with rate limit
-create or replace function public.get_profiles_by_usernames(usernames text[])
+create or replace function public.get_profiles_by_usernames(p_usernames text[])
 returns table(id uuid, username text, full_name text, avatar_url text)
 language plpgsql
 security definer
@@ -526,13 +526,14 @@ begin
   returning calls into v_calls;
 
   if v_calls > 30 then
-    raise exception 'Too many lookups. Try again in a minute.' using errcode = '53400';
+    raise exception 'Too many lookups. Try again in a minute.'
+      using errcode = '53400';
   end if;
 
   return query
     select p.id, p.username, p.full_name, p.avatar_url
     from public.profiles p
-    where p.username = any(usernames)
+    where p.username = any(p_usernames)
     limit 50;
 end;
 $$;

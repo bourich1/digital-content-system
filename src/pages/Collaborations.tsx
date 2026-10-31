@@ -158,9 +158,10 @@ export default function Collaborations() {
 
     try {
       setUploadingImage(true);
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
       const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `collaborations/${fileName}`;
+      const ownerId = currentUser?.id;
+      const filePath = ownerId ? `${ownerId}/${fileName}` : `collaborations/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('collaboration_images')

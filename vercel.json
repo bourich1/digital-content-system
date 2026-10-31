@@ -1,6 +1,5 @@
 {
-  "buildCommand": "node scripts/build-maintenance.mjs",
-  "outputDirectory": "maintenance-dist",
+  "installCommand": "npm ci",
   "headers": [
     {
       "source": "/(.*)",
@@ -21,8 +20,14 @@
       ]
     }
   ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/maintenance.html", "status": 503,
-      "headers": { "Cache-Control": "no-store", "Retry-After": "3600", "X-Robots-Tag": "noindex", "X-Content-Type-Options": "nosniff" } }
+  "rewrites": [
+    { "source": "/api/creator-profile", "destination": "/api/creator-profile" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/login", "destination": "/login.html" },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }

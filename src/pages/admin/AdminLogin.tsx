@@ -129,7 +129,7 @@ export default function AdminLogin() {
               <TurnstileCaptcha
                 siteKey={captchaSiteKey}
                 theme="dark"
-                action="admin-login"
+                action="login"
                 resetKey={captchaReset}
                 onToken={setCaptchaToken}
               />
