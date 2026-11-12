@@ -1,0 +1,25 @@
+import { handleMcpHttp } from './boostd-mcp.mjs';
+
+export function handleMcpPreview(request, metadata = false) {
+  const configuredResource = process.env.BOOSTD_MCP_RESOURCE_URL;
+  const supabaseUrl = process.env.BOOSTD_SUPABASE_URL;
+  if (process.env.VERCEL_ENV !== 'preview' ||
+      !configuredResource ||
+      !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(supabaseUrl ?? '') ||
+      supabaseUrl === 'https://erzksxgbbdxzjdtssuyv.supabase.co') {
+    return new Response('Boostd MCP preview is unavailable.', { status: 503 });
+  }
+  const resource = URL.parse(configuredResource);
+  if (!resource || resource.protocol !== 'https:' || resource.username || resource.password ||
+      resource.pathname !== '/api/mcp' || resource.search || resource.hash ||
+      resource.origin !== new URL(request.url).origin) {
+    return new Response('Boostd MCP preview is unavailable.', { status: 503 });
+  }
+
+  const url = metadata ? new URL('/.well-known/oauth-protected-resource/api/mcp', resource) : resource;
+  return handleMcpHttp(new Request(url, {
+    method: request.method,
+    headers: request.headers,
+    ...(request.body && { body: request.body, duplex: 'half' }),
+  }));
+}

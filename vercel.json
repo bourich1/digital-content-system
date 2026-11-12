@@ -21,6 +21,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/.well-known/oauth-protected-resource/api/mcp", "destination": "/api/mcp-metadata" },
+    { "source": "/api/mcp", "destination": "/api/mcp" },
     { "source": "/api/creator-profile", "destination": "/api/creator-profile" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/terms", "destination": "/terms.html" },

@@ -1,5 +1,16 @@
 # Boostd MCP first-use test
 
+## HTTPS preview
+
+On a Vercel Preview deployment, use `https://<preview-host>/api/mcp`.
+Set `BOOSTD_MCP_RESOURCE_URL` to that exact URL and set
+`BOOSTD_SUPABASE_URL` to a separate hosted test project. The preview handler
+returns 503 outside Vercel Preview or if configured with Boostd's production
+Supabase project. Set the remaining OAuth and public-key variables below for
+the test project. The OAuth issuer must issue tokens with the exact HTTPS MCP
+URL as their audience. Clients must be able to reach both the MCP endpoint and
+its protected-resource metadata without a Vercel login.
+
 The local OAuth transport listens on `http://127.0.0.1:4317/mcp`.
 Start it with `node server/boostd-mcp-http.mjs`.
 
