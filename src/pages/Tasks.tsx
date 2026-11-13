@@ -14,6 +14,18 @@ interface Task {
   title: string;
   is_completed: boolean;
   created_at: string;
+  due_date?: string | null;
+}
+
+function TaskDueDate({ dueDate }: { dueDate?: string | null }) {
+  if (!dueDate) return null;
+  const date = new Date(dueDate);
+  if (!Number.isFinite(date.getTime())) return null;
+  return (
+    <time dateTime={dueDate} className="block text-sm text-zinc-400">
+      Due {date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+    </time>
+  );
 }
 
 export default function Tasks() {
@@ -223,6 +235,7 @@ export default function Tasks() {
                         
                         <span className="flex-1 text-lg text-white">
                           {task.title}
+                          <TaskDueDate dueDate={task.due_date} />
                         </span>
 
                         <button 
@@ -262,6 +275,7 @@ export default function Tasks() {
                         
                         <span className="flex-1 text-lg text-zinc-500 line-through">
                           {task.title}
+                          <TaskDueDate dueDate={task.due_date} />
                         </span>
 
                         <button 

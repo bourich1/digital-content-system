@@ -1,15 +1,67 @@
 # Boostd MCP first-use test
 
+## Workspace write access
+
+Test `supabase/manual/boostd_mcp_rpc_grants.sql` and then
+`supabase/manual/boostd_mcp_workspace.sql` on a database with the Boostd
+policies before applying them in production. The first script preserves the
+existing application roles' policy helper access. The second refuses to create
+the MCP role if it would inherit execution of a public SECURITY DEFINER
+function. It then explicitly permits the caller's own admin-status helper,
+which existing table policies need.
+
+Install `supabase/manual/boostd_mcp_oauth_hook.sql` after the workspace role.
+Register the intended OAuth client and add its ID and exact HTTPS MCP URL to
+`boostd_mcp_private.oauth_clients`. Configure the Supabase Custom Access Token
+Hook to call `boostd_mcp_private.custom_access_token`, then verify both claims
+with a real token. If the project already has a hook, review how to combine the
+logic before changing Auth settings. Set `VITE_BOOSTD_MCP_WORKSPACE_WRITES=true`
+on the consent app before issuing workspace tokens so the user sees the full
+set of grants.
+The MCP server advertises each write operation only when its feature flag is
+enabled. These flags control MCP tool discovery and invocation. The SQL grants
+control what that token can do directly against the Data API.
+
+After the creator schema change, set `VITE_BOOSTD_CREATOR_SYNC=true` so
+Creator Inspiration displays saved account rows alongside existing
+browser-local entries. Set `BOOSTD_MCP_ENABLE_CREATOR_WRITES=true` to expose
+Instagram creator creation through MCP. The Focus Room tool supplies a
+duration link. The user starts the timer inside the app.
+
 ## HTTPS preview
 
 On a Vercel Preview deployment, use `https://<preview-host>/api/mcp`.
 Set `BOOSTD_MCP_RESOURCE_URL` to that exact URL and set
 `BOOSTD_SUPABASE_URL` to a separate hosted test project. The preview handler
-returns 503 outside Vercel Preview or if configured with Boostd's production
-Supabase project. Set the remaining OAuth and public-key variables below for
+returns 503 if configured with Boostd's production Supabase project in Preview.
+Set the remaining OAuth and public-key variables below for
 the test project. The OAuth issuer must issue tokens with the exact HTTPS MCP
 URL as their audience. Clients must be able to reach both the MCP endpoint and
 its protected-resource metadata without a Vercel login.
+
+Production uses `https://www.boostd.app/api/mcp`. It is disabled until
+`BOOSTD_MCP_ENABLE_PRODUCTION=true` is set on the production deployment.
+Production accepts only the scoped workspace role. Verify the actual OAuth
+token and database grants before enabling the endpoint.
+
+### Production rollout order
+
+1. Review and apply the RPC grants, workspace role, and OAuth hook SQL files
+   in that order. The workspace SQL adds nullable `tasks.due_date` and
+   `creators.avatar_url`, plus a unique owner/profile URL index. Check for
+   duplicate creator URLs before adding the index.
+2. Register the OpenCode public client with its exact loopback callback.
+   Insert that client ID and `https://www.boostd.app/api/mcp` in the private
+   registry. Configure the Auth token hook before enabling the OAuth server.
+   Set the authorization path to `/oauth/consent` and keep dynamic
+   registration disabled for this rollout.
+3. Deploy Boostd with the production public key and matching OAuth client
+   settings. Enable the consent disclosure before issuing write-capable
+   workspace tokens. Enable the production MCP route only after deployment
+   and database checks.
+4. Verify discovery without a Vercel login. Use OpenCode to deny, then
+   authorize and create a dated task. Verify that the task appears in Boostd,
+   that a second account cannot see it, and that catalog writes are denied.
 
 The local OAuth transport listens on `http://127.0.0.1:4317/mcp`.
 Start it with `node server/boostd-mcp-http.mjs`.

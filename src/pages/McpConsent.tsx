@@ -9,7 +9,7 @@ function LocalMcpLogin() {
   const [busy, setBusy] = useState(false);
   return (
     <main className="mx-auto max-w-lg space-y-4 p-8">
-      <h1 className="text-2xl font-semibold">Sign in to local Boostd</h1>
+      <h1 className="text-2xl font-semibold">Sign in to Boostd test workspace</h1>
       <form className="grid gap-3" onSubmit={async event => {
         event.preventDefault();
         const fields = new FormData(event.currentTarget);
@@ -20,9 +20,9 @@ function LocalMcpLogin() {
             email: String(fields.get('email')),
             password: String(fields.get('password')),
           });
-          if (error) setError('Could not sign in to the local test account.');
+          if (error) setError('Could not sign in to the test account.');
         } catch {
-          setError('Could not reach local Supabase.');
+          setError('Could not reach the test authentication server.');
         } finally {
           setBusy(false);
         }
@@ -99,7 +99,9 @@ export default function McpConsent() {
 
   if (authorizationId && clientId && callback && !session) {
     const localAuth = import.meta.env.DEV && /^http:\/\/127\.0\.0\.1:\d+$/.test(import.meta.env.VITE_SUPABASE_URL ?? '');
-    return localAuth ? <LocalMcpLogin /> : <Login returnTo={`/oauth/consent${search}`} />;
+    const hostedTest = import.meta.env.VITE_BOOSTD_MCP_HOSTED_TEST === 'true' &&
+      import.meta.env.VITE_SUPABASE_URL === 'https://vqmdsohqsspxbvrvsvxj.supabase.co';
+    return localAuth || hostedTest ? <LocalMcpLogin /> : <Login returnTo={`/oauth/consent${search}`} />;
   }
 
   return (
@@ -110,7 +112,12 @@ export default function McpConsent() {
         details?.id === authorizationId && !error ? (
           <>
             <p>{details.name} is requesting access to your Boostd account.</p>
-            <p>The Boostd MCP endpoint can read your tasks and content ideas.</p>
+            {import.meta.env.VITE_BOOSTD_MCP_WORKSPACE_WRITES === 'true' ? (
+              <p>This connection can read your tasks, ideas, collaborations, calendar, and tools catalog where available.
+                It can also create tasks and ideas, change idea status, save Instagram creators, and schedule posting dates for your own collaborations.</p>
+            ) : (
+              <p>The Boostd MCP endpoint can read your tasks, ideas, collaborations, calendar, and tools catalog where available.</p>
+            )}
             {details.scopes && <p>Requested OAuth scopes — {details.scopes}</p>}
             <div className="flex gap-3">
               <button type="button" className="rounded border px-4 py-2" disabled={busy} onClick={() => decide(false)}>Deny</button>
