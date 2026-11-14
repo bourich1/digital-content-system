@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { ArrowRight, Eye, Link2, Pencil, Plug } from 'lucide-react';
 import Login from './Login';
+import './McpConsent.css';
 
 function LocalMcpLogin() {
   const [error, setError] = useState('');
@@ -104,27 +106,54 @@ export default function McpConsent() {
     return localAuth || hostedTest ? <LocalMcpLogin /> : <Login returnTo={`/oauth/consent${search}`} />;
   }
 
+  const client = details?.id === authorizationId && !error ? details : undefined;
+  const writesEnabled = import.meta.env.VITE_BOOSTD_MCP_WORKSPACE_WRITES === 'true';
+
   return (
-    <main className="mx-auto max-w-lg space-y-4 p-8">
-      <h1 className="text-2xl font-semibold">Connect to Boostd</h1>
-      {error && <p role="alert">{error}</p>}
-      {!clientId || !callback || !authorizationId ? <p>Boostd authorization is unavailable.</p> :
-        details?.id === authorizationId && !error ? (
-          <>
-            <p>{details.name} is requesting access to your Boostd account.</p>
-            {import.meta.env.VITE_BOOSTD_MCP_WORKSPACE_WRITES === 'true' ? (
-              <p>This connection can read your tasks, ideas, collaborations, calendar, and tools catalog where available.
-                It can also create tasks and ideas, change idea status, save Instagram creators, and schedule posting dates for your own collaborations.</p>
-            ) : (
-              <p>The Boostd MCP endpoint can read your tasks, ideas, collaborations, calendar, and tools catalog where available.</p>
+    <main className="mcp-consent">
+      <section className="mcp-consent-card" aria-labelledby="mcp-consent-title">
+        <header className="mcp-consent-header">
+          <div className="mcp-consent-logos">
+            <span><img src="/icon white.png" alt="Boostd" /></span>
+            <Link2 size={20} aria-hidden="true" />
+            {client && (
+              <span>
+                {client.name.toLowerCase() === 'opencode'
+                  ? <img src="/images/brands/opencode-dark.png" alt="OpenCode" />
+                  : <Plug size={26} role="img" aria-label={client.name} />}
+              </span>
             )}
-            {details.scopes && <p>Requested OAuth scopes — {details.scopes}</p>}
-            <div className="flex gap-3">
-              <button type="button" className="rounded border px-4 py-2" disabled={busy} onClick={() => decide(false)}>Deny</button>
-              <button type="button" className="rounded bg-blue-700 px-4 py-2 text-white" disabled={busy} onClick={() => decide(true)}>Authorize</button>
-            </div>
-          </>
-        ) : !error && <p role="status">Loading authorization request…</p>}
+          </div>
+          <h1 id="mcp-consent-title">Connect to Boostd</h1>
+          {client && <p><strong>{client.name}</strong> is requesting access to your Boostd account.</p>}
+        </header>
+        {error && <p className="mcp-consent-error" role="alert">{error}</p>}
+        {!clientId || !callback || !authorizationId ? <p>Boostd authorization is unavailable.</p> :
+          client ? (
+            <>
+              <ul className="mcp-consent-permissions" aria-label="Requested access">
+                <li>
+                  <Eye size={19} aria-hidden="true" />
+                  <div><strong>View workspace data</strong><p>Tasks, ideas, collaborations, calendar, and tools catalog where available.</p></div>
+                </li>
+                {writesEnabled && (
+                  <li>
+                    <Pencil size={19} aria-hidden="true" />
+                    <div><strong>Make workspace changes</strong><p>Create tasks and ideas, change idea status, save Instagram creators, and schedule posting dates for your own collaborations.</p></div>
+                  </li>
+                )}
+              </ul>
+              {client.scopes && <p className="mcp-consent-scopes">Requested OAuth scopes · {client.scopes}</p>}
+              <div className="mcp-consent-actions">
+                <button type="button" className="mcp-consent-deny" disabled={busy} onClick={() => decide(false)}>Deny</button>
+                <button type="button" className="mcp-consent-authorize" disabled={busy} onClick={() => decide(true)}>
+                  Authorize <ArrowRight size={17} aria-hidden="true" />
+                </button>
+              </div>
+              {busy && <p className="mcp-consent-scopes" role="status">Finishing authorization…</p>}
+            </>
+          ) : !error && <p role="status">Loading authorization request…</p>}
+      </section>
     </main>
   );
 }
