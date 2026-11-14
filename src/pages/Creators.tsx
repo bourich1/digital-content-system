@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import React, { useState, useEffect, useRef } from 'react';
 import { parseProfileLink } from '@/lib/creatorProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -15,16 +16,44 @@ import { toast } from 'sonner';
 const initialCreators: Creator[] = [];
 
 export default function Creators() {
-  const { isDemoMode } = useAuth();
-  const [creators, setCreators] = useState<Creator[]>(() => {
+  const { isDemoMode, session } = useAuth();
+  const userId = import.meta.env.VITE_BOOSTD_CREATOR_SYNC === 'true' ? session?.user.id : undefined;
+  const [localCreators, setCreators] = useState<Creator[]>(() => {
     if (isDemoMode) return [];
     const saved = localStorage.getItem('content_circle_creators');
     return saved ? JSON.parse(saved) : initialCreators;
   });
+  const [synced, setSynced] = useState<{ owner: string; rows: Creator[] }>();
+  const cloudCreators = !isDemoMode && synced?.owner === userId ? synced?.rows ?? [] : [];
+  const creators = [...cloudCreators, ...localCreators];
+  const [savingCreator, setSavingCreator] = useState(false);
 
   useEffect(() => {
-    if (!isDemoMode) localStorage.setItem('content_circle_creators', JSON.stringify(creators));
-  }, [creators, isDemoMode]);
+    if (!isDemoMode) localStorage.setItem('content_circle_creators', JSON.stringify(localCreators));
+  }, [localCreators, isDemoMode]);
+
+  useEffect(() => {
+    if (isDemoMode || !userId) return;
+    let controller: AbortController;
+    const refresh = () => {
+      controller?.abort();
+      controller = new AbortController();
+      const { signal } = controller;
+      supabase.from('creators').select('id,name,platform,profile_url,description,avatar_url')
+        .eq('user_id', userId).order('created_at', { ascending: false }).abortSignal(signal)
+        .then(({ data, error }) => {
+          if (signal.aborted) return;
+          if (error) { toast.error('Could not load synced creators.'); return; }
+          setSynced({ owner: userId, rows: data ?? [] });
+        });
+    };
+    refresh();
+    window.addEventListener('focus', refresh);
+    return () => {
+      controller.abort();
+      window.removeEventListener('focus', refresh);
+    };
+  }, [userId, isDemoMode]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -90,22 +119,46 @@ export default function Creators() {
     setViewingCreator(creator);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (lookupBusy || !detailsVisible) return;
+    if (lookupBusy || savingCreator || !detailsVisible) return;
     if (!formData.name?.trim()) { toast.error('Enter a creator name.'); return; }
     try { const url = new URL(formData.profile_url || ''); if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) throw new Error(); }
     catch { toast.error('Enter a valid profile URL.'); return; }
     if (creators.some(c => c.id !== editingCreator?.id && c.profile_url.replace(/\/$/, '') === formData.profile_url?.replace(/\/$/, ''))) { toast.error('This creator is already in your inspiration list.'); return; }
-    if (editingCreator) {
-      setCreators(creators.map(c => c.id === editingCreator.id ? { ...c, ...formData } as Creator : c));
+    if (!isDemoMode && userId && (!editingCreator || cloudCreators.some(c => c.id === editingCreator.id))) {
+      setSavingCreator(true);
+      try {
+        const payload = {
+          name: formData.name.trim(), platform: formData.platform || 'Other',
+          profile_url: formData.profile_url, description: formData.description || '',
+          avatar_url: formData.avatar_url || '',
+        };
+        const mutation = editingCreator
+          ? supabase.from('creators').update(payload).eq('id', editingCreator.id).eq('user_id', userId)
+          : supabase.from('creators').insert({ ...payload, user_id: userId });
+        const { data, error } = await mutation.select('id,name,platform,profile_url,description,avatar_url').single();
+        if (error || !data) { toast.error('Could not save creator.'); return; }
+        setSynced(current => ({
+          owner: userId,
+          rows: [data, ...(current?.owner === userId ? current.rows.filter(c => c.id !== data.id) : [])],
+        }));
+        toast.success(editingCreator ? 'Creator updated successfully' : 'Creator added successfully');
+      } catch {
+        toast.error('Could not save creator.');
+        return;
+      } finally {
+        setSavingCreator(false);
+      }
+    } else if (editingCreator) {
+      setCreators(localCreators.map(c => c.id === editingCreator.id ? { ...c, ...formData } as Creator : c));
       toast.success('Creator updated successfully');
     } else {
       const newCreator: Creator = {
         id: generateId(),
         ...formData as Omit<Creator, 'id'>
       };
-      setCreators([newCreator, ...creators]);
+      setCreators([newCreator, ...localCreators]);
       toast.success('Creator added successfully');
     }
     setIsModalOpen(false);
@@ -116,9 +169,22 @@ export default function Creators() {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (creatorToDelete) {
-      setCreators(creators.filter(c => c.id !== creatorToDelete));
+      if (userId && cloudCreators.some(c => c.id === creatorToDelete)) {
+        try {
+          const { data, error } = await supabase.from('creators').delete().eq('id', creatorToDelete)
+            .eq('user_id', userId).select('id').maybeSingle();
+          if (error || !data) { toast.error('Could not delete creator.'); return; }
+          setSynced(current => current?.owner === userId
+            ? { owner: userId, rows: current.rows.filter(c => c.id !== creatorToDelete) } : current);
+        } catch {
+          toast.error('Could not delete creator.');
+          return;
+        }
+      } else {
+        setCreators(localCreators.filter(c => c.id !== creatorToDelete));
+      }
       setCreatorToDelete(null);
       setIsDeleteModalOpen(false);
       toast.success('Creator deleted successfully');

@@ -16,6 +16,12 @@ interface Task {
   created_at: string;
 }
 
+function initialFocusSeconds() {
+  const value = new URLSearchParams(window.location.search).get('minutes') ?? '';
+  const minutes = Number(value);
+  return /^\d{1,3}$/.test(value) && minutes >= 1 && minutes <= 180 ? minutes * 60 : 25 * 60;
+}
+
 const PRESETS = [15, 25, 45];
 
 const DEFAULT_SOUNDS = {
@@ -80,8 +86,8 @@ export default function FocusRoom() {
   }, []);
 
   // Timer
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [initialTime, setInitialTime] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState(initialFocusSeconds);
+  const [initialTime, setInitialTime] = useState(initialFocusSeconds);
   const [isActive, setIsActive] = useState(false);
   const [customMinutes, setCustomMinutes] = useState('');
   const [customDurationOpen, setCustomDurationOpen] = useState(false);

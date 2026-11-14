@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { AlertCircle } from 'lucide-react';
 
-export default function Login() {
+export default function Login({ returnTo = '/' }: { returnTo?: string }) {
   const { theme, toggleTheme } = usePublicTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,17 +28,17 @@ export default function Login() {
                      
     if (errorMsg) {
       setError("Authentication Error: " + decodeURIComponent(errorMsg).replace(/\+/g, ' '));
-      window.history.replaceState(null, '', window.location.pathname);
+      window.history.replaceState(null, '', returnTo === '/' ? window.location.pathname : returnTo);
     }
 
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        navigate('/');
+        navigate(returnTo);
       }
     });
     
     return () => data.subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, returnTo]);
 
   const handleGoogleLogin = async () => {
     if (captchaSiteKey && !captchaToken) {
@@ -52,7 +52,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: new URL(returnTo, window.location.origin).href
         }
       });
       if (error) throw error;
