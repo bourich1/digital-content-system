@@ -63,6 +63,20 @@ token and database grants before enabling the endpoint.
    authorize and create a dated task. Verify that the task appears in Boostd,
    that a second account cannot see it, and that catalog writes are denied.
 
+### Production rollback
+
+1. Turn off `BOOSTD_MCP_ENABLE_PRODUCTION` and redeploy. Revoke the MCP OAuth
+   client's grants or disable the client. Restore the previous Auth hook
+   configuration before issuing further tokens.
+2. Block existing workspace tokens at the Data API by revoking
+   `boostd_mcp_workspace` from `authenticator`. Confirm an existing token
+   can neither read nor write through the Data API before restoring RPC grants.
+3. If the RPC grant change needs to be reverted, restore `EXECUTE TO PUBLIC`
+   for the eight functions in `boostd_mcp_rpc_grants.sql`. The production
+   baseline already grants execute directly to `anon`, `authenticated` and
+   `service_role`. Keep the additive columns and index so existing tasks and
+   creators retain their data.
+
 The local OAuth transport listens on `http://127.0.0.1:4317/mcp`.
 Start it with `node server/boostd-mcp-http.mjs`.
 
