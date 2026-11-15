@@ -29,3 +29,5 @@ body:has(.mcp-page){zoom:1;background:#101114}
 .mcp-directory[data-theme=light] .mcp-install-step p span{color:#242529}
 .mcp-directory[data-theme=light] .mcp-job-grid button{background:#fff;color:#444850;border-color:#d9dce2}
 .mcp-directory[data-theme=light] .mcp-directory-tabs img:not([src$="claude.svg"]){filter:invert(1)}
+
+.mcp-approved-check{width:57px;height:57px;display:grid;place-items:center;margin:0 auto 23px;background:#2b231d;border:1px solid #885b39;border-radius:50%;color:var(--mcp-orange)}.mcp-approved-countdown{text-align:center;color:var(--mcp-muted);font-size:12px;margin:0 0 22px!important}

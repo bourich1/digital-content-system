@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { McpConsentView } from '@/components/McpUI';
+import { McpConsentView, McpApprovedView } from '@/components/McpUI';
 import Login from './Login';
 
 
@@ -31,6 +31,16 @@ export default function McpConsent() {
   const [details, setDetails] = useState<{ id: string; name: string; scopes: string; callback: string; userId: string; logo?: string; writes: boolean }>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [handoff, setHandoff] = useState<{url:string;userId:string}>();
+  const [seconds, setSeconds] = useState(3);
+
+  useEffect(() => {
+    if (!handoff || handoff.userId !== session?.user.id) return;
+    const deadline=Date.now()+3000;
+    const interval=window.setInterval(()=>setSeconds(Math.max(0,Math.ceil((deadline-Date.now())/1000))),250);
+    const timer=window.setTimeout(()=>window.location.assign(handoff.url),3000);
+    return ()=>{window.clearInterval(interval);window.clearTimeout(timer);};
+  },[handoff,session?.user.id]);
 
   useEffect(() => {
     if (!session || !authorizationId || !clientId || !callback) return;
@@ -41,7 +51,8 @@ export default function McpConsent() {
       if (error || !data) throw new Error('Invalid authorization');
       if (!('authorization_id' in data)) {
         // Auth has already validated the registered redirect and existing consent.
-        window.location.assign(trustedCallback(data.redirect_url, dynamicOAuth ? data.redirect_url : callback));
+        setSeconds(3);
+        setHandoff({url:trustedCallback(data.redirect_url, dynamicOAuth ? data.redirect_url : callback),userId:session.user.id});
         return;
       }
       const registeredClient = data.client.id === clientId && data.redirect_uri === callback;
@@ -60,7 +71,7 @@ export default function McpConsent() {
   }, [session, authorizationId, clientId, callback, dynamicOAuth]);
 
   async function decide(allow: boolean) {
-    if (!authorizationId || details?.id !== authorizationId || details.userId !== session?.user.id || busy) return;
+    if (!authorizationId || details?.id !== authorizationId || details.userId !== session?.user.id || busy || handoff) return;
     setBusy(true);
     try {
       if (allow && details.writes) {
@@ -72,7 +83,9 @@ export default function McpConsent() {
         ? oauth.approveAuthorization(authorizationId, { skipBrowserRedirect: true })
         : oauth.denyAuthorization(authorizationId, { skipBrowserRedirect: true }));
       if (error || !data?.redirect_url) throw new Error('Authorization failed');
-      window.location.assign(trustedCallback(data.redirect_url, details.callback));
+      const target=trustedCallback(data.redirect_url, details.callback);
+      if(allow){setSeconds(3);setHandoff({url:target,userId:session.user.id});}
+      else window.location.assign(target);
     } catch {
       setError('Could not finish authorization. Start again from your agent.');
     } finally {
@@ -83,6 +96,8 @@ export default function McpConsent() {
   if (authorizationId && clientId && callback && !session) {
     return <Login returnTo={`/oauth/consent${search}`} />;
   }
+
+  if(handoff && handoff.userId===session?.user.id) return <McpApprovedView name={details?.name} logo={details?.logo} seconds={seconds} onContinue={()=>window.location.assign(handoff.url)}/>;
 
   const client = details?.id === authorizationId && details?.userId === session?.user.id && !error ? details : undefined;
   const unavailable = !clientId || !callback || !authorizationId;

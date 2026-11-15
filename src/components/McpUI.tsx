@@ -31,3 +31,7 @@ export function McpConsentView({name,logo,email,scopes,ready=false,busy=false,er
  {error&&<><Link to="/mcp#connect" className="mcp-button mcp-primary mcp-full">Back to connection guide <ArrowRight size={16}/></Link><p className="mcp-auth-fine">Start a new connection from your agent to get a fresh request.</p></>}
  </section></McpAuthFrame>;
 }
+
+export function McpApprovedView({name,logo,seconds,onContinue}:{name?:string;logo?:string;seconds:number;onContinue:()=>void}) {
+ return <McpAuthFrame><section className="mcp-auth-card mcp-approved" aria-labelledby="mcp-approved-title"><ConnectionMarks name={name} logo={logo}/><div className="mcp-approved-check"><Check size={27}/></div><div className="mcp-auth-heading"><span className="mcp-eyebrow">ALL SET ON BOOSTD</span><h1 id="mcp-approved-title">Access approved</h1><p>Your permission is saved. Returning to {name||'your agent'} to finish connecting.</p></div><p className="mcp-approved-countdown" role="status" aria-live="polite">Returning in {seconds} {seconds===1?'second':'seconds'}…</p><button className="mcp-button mcp-primary mcp-full" onClick={onContinue}>Continue to {name||'your agent'} <ArrowRight size={16}/></button><p className="mcp-auth-fine">If your agent doesn’t open automatically, use the button above.</p></section></McpAuthFrame>;
+}
