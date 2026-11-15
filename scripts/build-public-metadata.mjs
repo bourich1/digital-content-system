@@ -1,10 +1,10 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import pages from '../src/lib/public-seo.json' with { type: 'json' };
 
 // Emit real per-route HTML heads so crawlers do not need JavaScript for canonical tags.
 const template = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../dist/.vite/manifest.json', import.meta.url), 'utf8'));
-const routeModules = { '/': 'src/pages/Landing.tsx', '/privacy': 'src/pages/Privacy.tsx', '/terms': 'src/pages/Terms.tsx', '/login': 'src/pages/Login.tsx' };
+const routeModules = { '/': 'src/pages/Landing.tsx', '/privacy': 'src/pages/Privacy.tsx', '/terms': 'src/pages/Terms.tsx', '/login': 'src/pages/Login.tsx', '/mcp': 'src/pages/Mcp.tsx', '/oauth/consent': 'src/pages/McpConsent.tsx' };
 const escape = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 for (const [path, page] of Object.entries(pages)) {
   let html = template.replace(/<title>.*?<\/title>/, `<title>${escape(page.title)}</title>`);
@@ -37,6 +37,7 @@ for (const [path, page] of Object.entries(pages)) {
   preload(routeModules[path]);
   html = html.replace('</head>', `  ${hints.join('\n    ')}\n  </head>`);
   const file = path === '/' ? 'index.html' : `${path.slice(1)}.html`;
+  await mkdir(new URL('.', new URL(`../dist/${file}`, import.meta.url)), { recursive: true });
   await writeFile(new URL(`../dist/${file}`, import.meta.url), html);
 }
-console.log('Built route-specific metadata for homepage, privacy, terms, and login.');
+console.log('Built route-specific metadata for all public pages.');

@@ -27,6 +27,8 @@
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/login", "destination": "/login.html" },
+    { "source": "/mcp", "destination": "/mcp.html" },
+    { "source": "/oauth/consent", "destination": "/oauth/consent.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

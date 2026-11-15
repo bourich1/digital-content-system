@@ -9,6 +9,7 @@ const AdminLayout = lazy(() => import('@/components/AdminLayout').then(module =>
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const Login = lazy(() => import('@/pages/Login'));
 const McpConsent = lazy(() => import('@/pages/McpConsent'));
+const Mcp = lazy(() => import('@/pages/Mcp'));
 const Landing = lazy(() => import('@/pages/Landing'));
 const Creators = lazy(() => import('@/pages/Creators'));
 const ContentIdeas = lazy(() => import('@/pages/ContentIdeas'));
@@ -164,6 +165,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/oauth/consent" element={<McpConsent />} />
+      <Route path="/mcp" element={<Mcp />} />
       <Route path="/login" element={
         session ? <Navigate to="/" replace /> : <Login />
       } />

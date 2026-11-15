@@ -1,65 +1,55 @@
-# MCP production readiness — 2026-11-15
+# MCP rollout status — 2026-11-15
 
-Status: blocked; production has not been changed.
+## Deployed
 
-## Confirmed
+Both Supabase projects are accessible. `boostd_mcp_reader.sql` and
+`boostd_mcp_session_oauth.sql` are installed on staging and production.
+Dynamic clients receive SELECT-only `boostd_mcp_reader`; existing registered
+clients retain their workspace role. Bindings require the approving user,
+active consent, client, session and exact resource. Missing/wrong resources
+and ambiguous concurrent approvals fail closed. Refresh uses its own session.
+Production allows only https://www.boostd.app/api/mcp.
 
-- Codex staging OAuth completed and the actual staging `list_tasks` returned
-  `demo: false` and zero tasks for the signed-in account on 2026-11-14.
-- The deployed staging hook was inspected on 2026-11-15.
-- A rolled-back temporary-table probe confirmed that a sibling CTE table scan
-  sees zero inserted rows while the INSERT RETURNING result sees one.
+Production deployment `dpl_4J69g7AJ82LC8kwSqFwb3NKnTqdE` is READY and aliased
+to https://www.boostd.app. Both dynamic-OAuth Vercel flags are enabled.
+Workspace-write disclosure was NOT enabled; dynamic clients have no write
+privileges. Release source excludes unrelated local edits and image deletions.
 
-## Local correction requiring staging validation
+## Validation
 
-`supabase/manual/boostd_mcp_dynamic_oauth_staging.sql` now consumes INSERT
-RETURNING through `effective_bindings`. The previous deployed version scans
-the binding table in the same statement that writes it; a brand-new binding
-is invisible to that scan. A later token refresh can mask this first-exchange
-failure, so the successful account test alone does not cover it.
+The deployed staging regression passed: first exchange, initialize, list_tasks,
+wrong/missing resources, independent session refresh, no token, ordinary login,
+direct write rejection, cross-account filtering, and revoked consent.
+Security advisors reported no error-level findings on either project.
+The isolated frontend release build passed. Earlier broad TypeScript checks
+had unrelated existing errors and were not represented as passing.
+Tokens and task contents were not logged.
 
-The corrected SQL has NOT been deployed. Run
-`supabase/verification/mcp_binding_visibility.sql`, deploy to staging, and
-test a newly registered client with no existing binding before promoting.
-Also test same-client wrong-resource and missing-resource requests, revoked
-consent, refresh, and cross-account isolation. The current hook filters NULL
-resources and stores bindings per user/client rather than per session; assess
-stale binding inheritance and overlapping sessions before production approval.
+Staging deployment: dpl_62CsRGUaBnUZP2ZV1Xs43mZ5pqdp. Future staging releases
+must include the test environment variables and update the long OAuth alias.
 
-## Production prerequisites
+## Remaining
 
-1. Restore authorized read access to Supabase project `erzksxgbbdxzjdtssuyv`.
-   The connected Supabase tool returned permission denied on a read-only
-   schema/role existence check. No production configuration was inferred.
-2. Inspect existing hook, role grants, RLS policies and OAuth configuration.
-   Save exact existing function definition and Auth settings for rollback.
-3. Do not replay the original provisioning SQL blindly: role/table/policy
-   creation is not idempotent. Apply only missing reviewed prerequisites.
-4. Adapt the reviewed hook to exactly `https://www.boostd.app/api/mcp`.
-   The staging URL must never be accepted as a production token audience.
-5. Add production support to the explicit dynamic-client gates in both
-   `server/boostd-mcp.mjs` and `src/pages/McpConsent.tsx`. They currently allow
-   only the staging Supabase project. Test consent auto-approval redirects:
-   the existing redirect branch still compares with the static callback.
-6. Verify Data API privileges match the consent disclosure. Workspace SQL
-   grants writes even if MCP write tools are hidden; do not treat tool flags
-   as database authorization. Keep initial production tools read-only unless
-   write disclosure and database grants have been explicitly reconciled.
-7. Deploy only scoped MCP changes; the working tree contains unrelated edits
-   and deleted image artifacts. Enable the production route only after all
-   preceding checks, then verify real Codex initialize/list_tasks and negative
-   cases. Keep tokens and task contents out of logs.
+1. Enable production Supabase oauth_server_allow_dynamic_registration.
+   The attempted PATCH was NOT executed: automatic approval review hit its
+   usage limit. This was a review-service failure, not an unsafe determination.
+   Do not bypass the approval check.
+2. Verify public production metadata and unauthenticated 401 after rollout.
+3. Add/authenticate production Codex, get the user's consent, and call
+   production list_tasks. Production end-to-end success is NOT established.
+The reader/session hook, regression script and branded MCP pages are included
+in this source revision. Production end-to-end verification remains pending.
 
 ## Rollback
 
-- Disable `BOOSTD_MCP_ENABLE_PRODUCTION` and redeploy the previous reviewed
-  server build. Restore the saved Auth hook and OAuth configuration.
-- Revoke affected OAuth sessions/consents. Already issued access tokens may
-  survive session revocation until expiry; block the MCP role at the Data API
-  by revoking its membership from `authenticator` if immediate cutoff is needed.
-- Keep binding rows and additive schema during rollback. Do not drop user
-  tasks, profiles, or application data. Verify both MCP and Data API denial.
+Previous deployment: dpl_F4e8hjexYLNhmyL9P4B87dQqVVEx
+(digital-content-system-1alw9rddx-tamashop848-3253s-projects.vercel.app).
+Ignored local backups: build/boostd-production/hook-before-session-rollout.json
+and build/boostd-production/auth-before-session-rollout.json. The Auth backup
+contains sensitive settings: never print or commit it.
 
-References:
-- https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-MODIFYING
-- https://supabase.com/docs/guides/auth/auth-hooks/custom-access-token-hook
+Disable the dynamic flag, restore the previous build and saved hook, and revoke
+affected OAuth sessions/grants. Existing tokens may survive until expiry;
+revoke reader membership from authenticator for immediate Data API cutoff.
+Keep additive tables and user data. The old dynamic_oauth_staging SQL is
+historical and must not be reapplied over the session-bound hook.

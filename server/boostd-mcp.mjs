@@ -12,6 +12,7 @@ const writePermissions = [
   { role: 'boostd_mcp_workspace', flag: 'BOOSTD_MCP_ENABLE_CREATOR_WRITES', tools: ['add_inspiration_creator'] },
 ];
 const workspaceRole = 'boostd_mcp_workspace';
+const workspaceReadRole = 'boostd_mcp_reader';
 const supabaseBase = process.env.BOOSTD_SUPABASE_URL ?? 'https://erzksxgbbdxzjdtssuyv.supabase.co';
 if (!/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(supabaseBase) &&
     !/^http:\/\/127\.0\.0\.1:[0-9]+$/.test(supabaseBase)) {
@@ -193,7 +194,7 @@ async function verifyUser(token, remote = false) {
   if (!token || !key) return { error: 'Live mode requires a Boostd user access token and Supabase public key.' };
   try {
     const role = decodeClaims(token).role;
-    const scopedRole = role === workspaceRole || writePermissions.some(permission => permission.role === role);
+    const scopedRole = role === workspaceRole || role === workspaceReadRole || writePermissions.some(permission => permission.role === role);
     if ((role !== 'authenticated' && !(remote && scopedRole)) ||
         (!key.startsWith('sb_publishable_') && decodeClaims(key).role !== 'anon')) {
       return { error: 'Use a signed-in user token and a Supabase publishable or anon key.' };
@@ -460,10 +461,12 @@ export async function handleMcpHttp(request, { requireWorkspaceRole = false } = 
   const claims = identity && !identity.error ? decodeClaims(token) : null;
   const audience = Array.isArray(claims?.aud) ? claims.aud : [claims?.aud];
   const dynamicClient = requireWorkspaceRole && process.env.BOOSTD_MCP_DYNAMIC_OAUTH === 'true' &&
-    supabaseBase === 'https://vqmdsohqsspxbvrvsvxj.supabase.co' &&
+    (supabaseBase === 'https://vqmdsohqsspxbvrvsvxj.supabase.co' ||
+      (supabaseBase === 'https://erzksxgbbdxzjdtssuyv.supabase.co' &&
+        process.env.BOOSTD_MCP_ENABLE_PRODUCTION === 'true' && resource === 'https://www.boostd.app/api/mcp')) &&
     typeof claims?.client_id === 'string' && claims.client_id.length > 0;
   if (!claims || claims.sub !== identity.user.id || (!dynamicClient && claims.client_id !== clientId) || !audience.includes(resource) ||
-      (requireWorkspaceRole && claims.role !== workspaceRole)) {
+      (requireWorkspaceRole && claims.role !== workspaceRole && claims.role !== workspaceReadRole)) {
     return new Response(null, {
       status: 401,
       headers: { 'WWW-Authenticate': `Bearer resource_metadata="${metadata.href}"`, 'Cache-Control': 'no-store' },

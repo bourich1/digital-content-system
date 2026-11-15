@@ -1,4 +1,14 @@
 {
+  "/mcp": {
+    "title": "Connect your AI agent — BoostD MCP",
+    "description": "Bring your BoostD tasks, content ideas, and plans into your AI conversations. Explore tools, setup instructions, and read-only access with BoostD MCP.",
+    "robots": "index, follow"
+  },
+  "/oauth/consent": {
+    "title": "Authorize a connection — BoostD",
+    "description": "Review an agent’s request to access your BoostD workspace.",
+    "robots": "noindex, nofollow"
+  },
   "/": {
     "title": "BoostD — Your Content Management Platform",
     "description": "BoostD helps creators, social media managers, and teams organize, plan, and grow their digital content from one centralized workspace.",
