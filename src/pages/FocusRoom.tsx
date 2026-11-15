@@ -88,7 +88,7 @@ export default function FocusRoom() {
   // Timer
   const [timeLeft, setTimeLeft] = useState(initialFocusSeconds);
   const [initialTime, setInitialTime] = useState(initialFocusSeconds);
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(() => new URLSearchParams(window.location.search).get('start') === '1');
   const [customMinutes, setCustomMinutes] = useState('');
   const [customDurationOpen, setCustomDurationOpen] = useState(false);
   const [sessionsCompleted, setSessions] = useState(0);

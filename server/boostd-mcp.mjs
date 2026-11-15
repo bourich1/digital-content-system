@@ -1,3 +1,4 @@
+import {actionTools,creatorReadTool,focusStartTool,workspaceAction} from './mcp-workspace-actions.mjs';
 import { createInterface } from 'node:readline';
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -12,6 +13,7 @@ const writePermissions = [
   { role: 'boostd_mcp_workspace', flag: 'BOOSTD_MCP_ENABLE_CREATOR_WRITES', tools: ['add_inspiration_creator'] },
 ];
 const workspaceRole = 'boostd_mcp_workspace';
+const workspaceActionRole = 'boostd_mcp_actions';
 const workspaceReadRole = 'boostd_mcp_reader';
 const supabaseBase = process.env.BOOSTD_SUPABASE_URL ?? 'https://erzksxgbbdxzjdtssuyv.supabase.co';
 if (!/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(supabaseBase) &&
@@ -91,11 +93,11 @@ const tools = [
 ];
 
 function availableTools(readOnly, identity) {
-  const candidates = readOnly ? [...tools, ...accountReadTools] : tools.filter(tool => tool.name !== 'schedule_collaboration');
+  const candidates = readOnly ? [...tools.filter(t=>t.name!=='start_focus_session'), ...accountReadTools, creatorReadTool, ...actionTools, focusStartTool] : tools.filter(tool => tool.name !== 'schedule_collaboration');
   return candidates.filter(tool => !readOnly || tool.annotations.readOnlyHint ||
     identity?.writeTools.includes(tool.name)).map(tool => ({
     ...tool,
-    description: readOnly ? tool.description.replace('fictional ', '').replace(/(?:local )?demo workspace/, 'signed-in workspace') : tool.description,
+    description: readOnly ? tool.description.replace('fictional ', '').replace(/(?:local )?demo workspace/, 'signed-in workspace').replace(/demo /g, '') : tool.description,
     icons: [icon],
   }));
 }
@@ -109,9 +111,13 @@ const creators = new Map();
 let focusSession;
 
 function validValue(value, schema) {
+  if (value === null) return schema.nullable === true;
+  if (schema.type === 'number') return typeof value === 'number' && Number.isFinite(value) && value >= (schema.minimum ?? -Infinity);
+  if (schema.format === 'uuid') return typeof value === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
+  if (schema.format === 'https-url') {try {const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&value.length<=512;} catch{return false;}}
   if (schema.type === 'boolean') return typeof value === 'boolean';
   if (schema.type === 'integer') return Number.isInteger(value) && value >= schema.minimum && value <= schema.maximum;
-  if (typeof value !== 'string' || !value.trim() || value.length > (schema.maxLength ?? 200)) return false;
+  if (typeof value !== 'string' || (!value.trim() && !schema.allowEmpty) || value.length > (schema.maxLength ?? 200)) return false;
   if (schema.enum) return schema.enum.includes(value);
   if (schema.format === 'date') {
     const day = Date.parse(value);
@@ -194,7 +200,7 @@ async function verifyUser(token, remote = false) {
   if (!token || !key) return { error: 'Live mode requires a Boostd user access token and Supabase public key.' };
   try {
     const role = decodeClaims(token).role;
-    const scopedRole = role === workspaceRole || role === workspaceReadRole || writePermissions.some(permission => permission.role === role);
+    const scopedRole = role === workspaceActionRole || role === workspaceRole || role === workspaceReadRole || writePermissions.some(permission => permission.role === role);
     if ((role !== 'authenticated' && !(remote && scopedRole)) ||
         (!key.startsWith('sb_publishable_') && decodeClaims(key).role !== 'anon')) {
       return { error: 'Use a signed-in user token and a Supabase publishable or anon key.' };
@@ -222,6 +228,10 @@ async function readLive(name, args, identity) {
     return { minutes: args.minutes, focus_room_url: `https://www.boostd.app/focus?minutes=${args.minutes}` };
   }
   try {
+    if (name === 'list_creators') {
+      const rows=await readRows('creators',{select:account.actionAccess?'id,name,platform,profile_url,description,avatar_url':'id,name,platform,profile_url',user_id:`eq.${user.id}`,order:'created_at.desc',limit:'100'},headers);
+      return {creators:args.query?rows.filter(r=>`${r.name} ${r.platform}`.toLowerCase().includes(args.query.toLowerCase())):rows,limit:100};
+    }
     if (name === 'list_tools') return await readToolCatalog(user.id, headers);
     if (name === 'list_calendar' || name === 'list_collaborations') {
       return await readCollaborations(name, args, user.id, headers);
@@ -229,7 +239,7 @@ async function readLive(name, args, identity) {
     const tasksRequested = name === 'list_tasks';
     const table = tasksRequested ? 'tasks' : 'content_ideas';
     const query = new URLSearchParams({
-      select: tasksRequested ? 'id,title,is_completed,due_date,created_at' : 'id,title,status,created_at',
+      select: tasksRequested ? 'id,title,is_completed,due_date,created_at' : account.actionAccess?'id,title,status,notes,source_url,created_at':'id,title,status,created_at',
       user_id: `eq.${user.id}`,
       order: 'created_at.desc,id.desc',
       limit: '50',
@@ -399,6 +409,8 @@ async function callTool(params, readOnly, identity) {
   }
   let data;
   if (!readOnly) data = runTool(name, args);
+  else if (actionTools.some(t=>t.name===name)) data=await workspaceAction(name,args,identity,supabaseBase);
+  else if(name==='start_focus_session') data={minutes:args.minutes,focus_room_url:`https://www.boostd.app/focus?minutes=${args.minutes}&start=1`,starts_when_opened:true};
   else if (name === 'create_task') data = await createLiveTask(args, identity);
   else if (name === 'schedule_collaboration') data = await scheduleCollaboration(args, identity);
   else if (name === 'add_inspiration_creator') data = await saveInspirationCreator(args, identity);
@@ -466,13 +478,15 @@ export async function handleMcpHttp(request, { requireWorkspaceRole = false } = 
         process.env.BOOSTD_MCP_ENABLE_PRODUCTION === 'true' && resource === 'https://www.boostd.app/api/mcp')) &&
     typeof claims?.client_id === 'string' && claims.client_id.length > 0;
   if (!claims || claims.sub !== identity.user.id || (!dynamicClient && claims.client_id !== clientId) || !audience.includes(resource) ||
-      (requireWorkspaceRole && claims.role !== workspaceRole && claims.role !== workspaceReadRole)) {
+      (requireWorkspaceRole && claims.role !== workspaceActionRole && claims.role !== workspaceRole && claims.role !== workspaceReadRole)) {
     return new Response(null, {
       status: 401,
       headers: { 'WWW-Authenticate': `Bearer resource_metadata="${metadata.href}"`, 'Cache-Control': 'no-store' },
     });
   }
-  identity.writeTools = writePermissions
+  identity.actionAccess=claims.role===workspaceActionRole;
+  identity.sessionId=claims.session_id;
+  identity.writeTools = claims.role===workspaceActionRole ? [...writePermissions.flatMap(p=>p.tools),...actionTools.map(t=>t.name),'start_focus_session'] : writePermissions
     .filter(permission => (claims.role === workspaceRole || claims.role === permission.role) &&
       process.env[permission.flag] === 'true')
     .flatMap(permission => permission.tools);

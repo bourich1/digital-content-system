@@ -28,17 +28,18 @@ Tokens and task contents were not logged.
 Staging deployment: dpl_62CsRGUaBnUZP2ZV1Xs43mZ5pqdp. Future staging releases
 must include the test environment variables and update the long OAuth alias.
 
-## Remaining
+## Workspace actions rollout
 
-1. Enable production Supabase oauth_server_allow_dynamic_registration.
-   The attempted PATCH was NOT executed: automatic approval review hit its
-   usage limit. This was a review-service failure, not an unsafe determination.
-   Do not bypass the approval check.
-2. Verify public production metadata and unauthenticated 401 after rollout.
-3. Add/authenticate production Codex, get the user's consent, and call
-   production list_tasks. Production end-to-end success is NOT established.
-The reader/session hook, regression script and branded MCP pages are included
-in this source revision. Production end-to-end verification remains pending.
+Dynamic client registration was enabled and verified (201 registration; anonymous MCP remains 401).
+Workspace action revision adds explicit request-bound consent and a separate `boostd_mcp_actions` role.
+Existing session bindings default to reader, including refreshes. Clients with prior auto-approved consent
+must revoke/disconnect their existing grant and reconnect to review the expanded permissions.
+Staging integration checks cover actual OAuth, CRUD for all four tables, ownership isolation,
+delete previews and signed confirmations, immutable ownership and refresh role preservation.
+Deletion requires BOOSTD_MCP_DELETE_CONFIRMATION_SECRET in the runtime environment.
+Only owned collaborations may be changed; tools do not send partner invitations or alter payments.
+Focus start links start the timer when opened, not remotely in an existing browser tab.
+Production migration, deployment and final verification are tracked in MCP_TASKS.md.
 
 ## Rollback
 

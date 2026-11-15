@@ -52,7 +52,7 @@ export default function McpConsent() {
       trustedCallback(data.redirect_uri, data.redirect_uri);
       setDetails({ id: authorizationId, name: data.client.name || 'MCP client', scopes: data.scope,
         callback: data.redirect_uri, userId: data.user.id, logo: data.client.logo_uri,
-        writes: registeredClient && import.meta.env.VITE_BOOSTD_MCP_WORKSPACE_WRITES === 'true' });
+        writes: dynamicOAuth });
     }).catch(() => {
       if (!cancelled) setError('Could not load the authorization request.');
     });
@@ -63,6 +63,10 @@ export default function McpConsent() {
     if (!authorizationId || details?.id !== authorizationId || details.userId !== session?.user.id || busy) return;
     setBusy(true);
     try {
+      if (allow && details.writes) {
+        const {error:grantError}=await supabase.rpc('approve_mcp_workspace_actions',{request_id:authorizationId});
+        if(grantError) throw new Error('Write consent could not be saved');
+      }
       const oauth = supabase.auth.oauth;
       const { data, error } = await (allow
         ? oauth.approveAuthorization(authorizationId, { skipBrowserRedirect: true })
