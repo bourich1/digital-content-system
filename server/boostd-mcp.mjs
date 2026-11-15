@@ -459,7 +459,10 @@ export async function handleMcpHttp(request, { requireWorkspaceRole = false } = 
   const identity = token ? await verifyUser(token, true) : null;
   const claims = identity && !identity.error ? decodeClaims(token) : null;
   const audience = Array.isArray(claims?.aud) ? claims.aud : [claims?.aud];
-  if (!claims || claims.sub !== identity.user.id || claims.client_id !== clientId || !audience.includes(resource) ||
+  const dynamicClient = requireWorkspaceRole && process.env.BOOSTD_MCP_DYNAMIC_OAUTH === 'true' &&
+    supabaseBase === 'https://vqmdsohqsspxbvrvsvxj.supabase.co' &&
+    typeof claims?.client_id === 'string' && claims.client_id.length > 0;
+  if (!claims || claims.sub !== identity.user.id || (!dynamicClient && claims.client_id !== clientId) || !audience.includes(resource) ||
       (requireWorkspaceRole && claims.role !== workspaceRole)) {
     return new Response(null, {
       status: 401,

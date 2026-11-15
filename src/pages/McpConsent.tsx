@@ -44,7 +44,7 @@ function trustedCallback(value: string, registered: string) {
   const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname);
   if ((target.protocol !== 'https:' && !(target.protocol === 'http:' && loopback)) ||
       target.origin !== expected.origin || target.pathname !== expected.pathname ||
-      target.username || target.password) {
+      target.username || target.password || target.hash) {
     throw new Error('Invalid callback');
   }
   return target.href;
@@ -56,7 +56,9 @@ export default function McpConsent() {
   const authorizationId = new URLSearchParams(search).get('authorization_id');
   const clientId = import.meta.env.VITE_BOOSTD_MCP_OAUTH_CLIENT_ID;
   const callback = import.meta.env.VITE_BOOSTD_MCP_OAUTH_CALLBACK;
-  const [details, setDetails] = useState<{ id: string; name: string; scopes: string }>();
+  const dynamicOAuth = import.meta.env.VITE_BOOSTD_MCP_DYNAMIC_OAUTH === 'true' &&
+    import.meta.env.VITE_SUPABASE_URL === 'https://vqmdsohqsspxbvrvsvxj.supabase.co';
+  const [details, setDetails] = useState<{ id: string; name: string; scopes: string; callback: string; userId: string }>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -71,19 +73,22 @@ export default function McpConsent() {
         window.location.assign(trustedCallback(data.redirect_url, callback));
         return;
       }
-      if (data.client.id !== clientId || data.redirect_uri !== callback || data.user.id !== session.user.id) {
+      const registeredClient = data.client.id === clientId && data.redirect_uri === callback;
+      if ((!registeredClient && !dynamicOAuth) || data.user.id !== session.user.id) {
         setError('This authorization request could not be verified. Start again from your agent.');
         return;
       }
-      setDetails({ id: authorizationId, name: data.client.name || 'MCP client', scopes: data.scope });
+      trustedCallback(data.redirect_uri, data.redirect_uri);
+      setDetails({ id: authorizationId, name: data.client.name || 'MCP client', scopes: data.scope,
+        callback: data.redirect_uri, userId: data.user.id });
     }).catch(() => {
       if (!cancelled) setError('Could not load the authorization request.');
     });
     return () => { cancelled = true; };
-  }, [session, authorizationId, clientId, callback]);
+  }, [session, authorizationId, clientId, callback, dynamicOAuth]);
 
   async function decide(allow: boolean) {
-    if (!authorizationId || !callback || details?.id !== authorizationId || busy) return;
+    if (!authorizationId || details?.id !== authorizationId || details.userId !== session?.user.id || busy) return;
     setBusy(true);
     try {
       const oauth = supabase.auth.oauth;
@@ -91,7 +96,7 @@ export default function McpConsent() {
         ? oauth.approveAuthorization(authorizationId, { skipBrowserRedirect: true })
         : oauth.denyAuthorization(authorizationId, { skipBrowserRedirect: true }));
       if (error || !data?.redirect_url) throw new Error('Authorization failed');
-      window.location.assign(trustedCallback(data.redirect_url, callback));
+      window.location.assign(trustedCallback(data.redirect_url, details.callback));
     } catch {
       setError('Could not finish authorization. Start again from your agent.');
     } finally {
@@ -106,7 +111,7 @@ export default function McpConsent() {
     return localAuth || hostedTest ? <LocalMcpLogin /> : <Login returnTo={`/oauth/consent${search}`} />;
   }
 
-  const client = details?.id === authorizationId && !error ? details : undefined;
+  const client = details?.id === authorizationId && details?.userId === session?.user.id && !error ? details : undefined;
   const writesEnabled = import.meta.env.VITE_BOOSTD_MCP_WORKSPACE_WRITES === 'true';
 
   return (

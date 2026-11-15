@@ -1,5 +1,9 @@
 # Boostd MCP first-use test
 
+For the current dynamic-client rollout status and remaining production gates,
+read [MCP_PRODUCTION_READINESS.md](MCP_PRODUCTION_READINESS.md) first.
+The older static-client rollout below does not enable dynamic Codex clients.
+
 ## Workspace write access
 
 Test `supabase/manual/boostd_mcp_rpc_grants.sql` and then
