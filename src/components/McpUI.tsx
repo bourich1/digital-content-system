@@ -32,6 +32,31 @@ export function McpConsentView({name,logo,email,scopes,ready=false,busy=false,er
  </section></McpAuthFrame>;
 }
 
-export function McpApprovedView({name,logo,seconds,onContinue}:{name?:string;logo?:string;seconds:number;onContinue:()=>void}) {
- return <McpAuthFrame><section className="mcp-auth-card mcp-approved" aria-labelledby="mcp-approved-title"><ConnectionMarks name={name} logo={logo}/><div className="mcp-approved-check"><Check size={27}/></div><div className="mcp-auth-heading"><span className="mcp-eyebrow">ALL SET ON BOOSTD</span><h1 id="mcp-approved-title">Access approved</h1><p>Your permission is saved. Returning to {name||'your agent'} to finish connecting.</p></div><p className="mcp-approved-countdown" role="status" aria-live="polite">Returning in {seconds} {seconds===1?'second':'seconds'}…</p><button className="mcp-button mcp-primary mcp-full" onClick={onContinue}>Continue to {name||'your agent'} <ArrowRight size={16}/></button><p className="mcp-auth-fine">If your agent doesn’t open automatically, use the button above.</p></section></McpAuthFrame>;
+export function McpApprovedView({name, logo, seconds, popupStatus, onContinue}: {
+  name?: string;
+  logo?: string;
+  seconds: number;
+  popupStatus?: 'waiting' | 'connected' | 'unconfirmed';
+  onContinue: () => void;
+}) {
+  const agent = name || 'your agent';
+  return <McpAuthFrame>
+    <section className="mcp-auth-card mcp-approved" aria-labelledby="mcp-approved-title">
+      <ConnectionMarks name={name} logo={logo}/>
+      <div className="mcp-approved-check"><Check size={27}/></div>
+      <div className="mcp-auth-heading">
+        <h1 id="mcp-approved-title">{popupStatus === 'connected' ? 'Connected' : 'Access approved'}</h1>
+        <p role="status">
+          {popupStatus === 'connected' ? `You can return to ${agent}.`
+            : popupStatus === 'waiting' ? `Waiting for ${agent} to finish connecting…`
+            : popupStatus === 'unconfirmed' ? 'Boostd could not confirm the connection. Check your agent before retrying.'
+            : `Returning to ${agent} in ${seconds} seconds…`}
+        </p>
+      </div>
+      {(!popupStatus || popupStatus === 'unconfirmed') &&
+        <button className="mcp-button mcp-primary mcp-full" onClick={onContinue}>
+          Continue to {agent} <ArrowRight size={16}/>
+        </button>}
+    </section>
+  </McpAuthFrame>;
 }

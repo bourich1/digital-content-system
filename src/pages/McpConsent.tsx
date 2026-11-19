@@ -33,14 +33,45 @@ export default function McpConsent() {
   const [busy, setBusy] = useState(false);
   const [handoff, setHandoff] = useState<{url:string;userId:string}>();
   const [seconds, setSeconds] = useState(3);
+  const [popup, setPopup] = useState<Window>();
+  const [connected, setConnected] = useState(false);
+  const [verificationExpired, setVerificationExpired] = useState(false);
+  const popupTrial = import.meta.env.VITE_SUPABASE_URL === 'https://vqmdsohqsspxbvrvsvxj.supabase.co'
+    && import.meta.env.VITE_BOOSTD_MCP_POPUP_TRIAL === 'true';
 
   useEffect(() => {
-    if (!handoff || handoff.userId !== session?.user.id) return;
+    if (!popup || !handoff || !authorizationId || handoff.userId !== session?.user.id) return;
+    let stopped = false;
+    let timer: number;
+    const deadline = Date.now() + 30_000;
+
+    async function verify() {
+      const { data } = await supabase.rpc('mcp_connection_completed', { request_id: authorizationId });
+      if (stopped) return;
+      if (data === true) {
+        setConnected(true);
+        popup?.close();
+      } else if (Date.now() >= deadline) {
+        setVerificationExpired(true);
+      } else {
+        timer = window.setTimeout(verify, 1000);
+      }
+    }
+
+    void verify();
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+    };
+  }, [popup, handoff, authorizationId, session?.user.id]);
+
+  useEffect(() => {
+    if (popup || !handoff || handoff.userId !== session?.user.id) return;
     const deadline=Date.now()+3000;
     const interval=window.setInterval(()=>setSeconds(Math.max(0,Math.ceil((deadline-Date.now())/1000))),250);
     const timer=window.setTimeout(()=>window.location.assign(handoff.url),3000);
     return ()=>{window.clearInterval(interval);window.clearTimeout(timer);};
-  },[handoff,session?.user.id]);
+  },[popup,handoff,session?.user.id]);
 
   useEffect(() => {
     if (!session || !authorizationId || !clientId || !callback) return;
@@ -73,6 +104,10 @@ export default function McpConsent() {
   async function decide(allow: boolean) {
     if (!authorizationId || details?.id !== authorizationId || details.userId !== session?.user.id || busy || handoff) return;
     setBusy(true);
+    const callbackWindow = allow && popupTrial && details.writes
+      ? window.open('about:blank', '_blank', 'popup,width=520,height=520')
+      : null;
+    if (callbackWindow) callbackWindow.opener = null;
     try {
       if (allow && details.writes) {
         const {error:grantError}=await supabase.rpc('approve_mcp_workspace_actions',{request_id:authorizationId});
@@ -84,9 +119,17 @@ export default function McpConsent() {
         : oauth.denyAuthorization(authorizationId, { skipBrowserRedirect: true }));
       if (error || !data?.redirect_url) throw new Error('Authorization failed');
       const target=trustedCallback(data.redirect_url, details.callback);
-      if(allow){setSeconds(3);setHandoff({url:target,userId:session.user.id});}
+      if (allow) {
+        if (callbackWindow && !callbackWindow.closed) {
+          callbackWindow.location.replace(target);
+          setPopup(callbackWindow);
+        }
+        setSeconds(3);
+        setHandoff({ url: target, userId: session.user.id });
+      }
       else window.location.assign(target);
     } catch {
+      callbackWindow?.close();
       setError('Could not finish authorization. Start again from your agent.');
     } finally {
       setBusy(false);
@@ -97,7 +140,7 @@ export default function McpConsent() {
     return <Login returnTo={`/oauth/consent${search}`} />;
   }
 
-  if(handoff && handoff.userId===session?.user.id) return <McpApprovedView name={details?.name} logo={details?.logo} seconds={seconds} onContinue={()=>window.location.assign(handoff.url)}/>;
+  if(handoff && handoff.userId===session?.user.id) return <McpApprovedView name={details?.name} logo={details?.logo} seconds={seconds} popupStatus={popup ? (connected ? "connected" : verificationExpired ? "unconfirmed" : "waiting") : undefined} onContinue={()=>window.location.assign(handoff.url)}/>;
 
   const client = details?.id === authorizationId && details?.userId === session?.user.id && !error ? details : undefined;
   const unavailable = !clientId || !callback || !authorizationId;

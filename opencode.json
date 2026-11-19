@@ -1,0 +1,52 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "boostd": {
+        "type": "local",
+        "command": [
+          "node",
+          "server/boostd-mcp.mjs"
+        ],
+        "cwd": "."
+      },
+      "boostd-live": {
+        "type": "local",
+        "command": [
+          "node",
+          "server/boostd-mcp.mjs",
+          "--live"
+        ],
+        "cwd": ".",
+        "environment": {
+          "BOOSTD_USER_ACCESS_TOKEN": "{env:BOOSTD_USER_ACCESS_TOKEN}",
+          "BOOSTD_SUPABASE_PUBLIC_KEY": "{env:BOOSTD_SUPABASE_PUBLIC_KEY}"
+        }
+      },
+      "boostd-oauth": {
+        "type": "remote",
+        "url": "http://127.0.0.1:4317/mcp",
+        "oauth": {
+          "client_id": "35668b88-518c-49c9-aaa4-e2a5ae06079b",
+          "redirect_uri": "http://127.0.0.1:19876/mcp/oauth/callback"
+        }
+      },
+      "boostd-https-staging": {
+        "type": "remote",
+        "url": "https://boostd-mcp-staging-tamashop848-3253s-projects.vercel.app/api/mcp",
+        "oauth": {
+          "client_id": "162c67ca-d294-4657-8667-3eca089f870b",
+          "redirect_uri": "http://127.0.0.1:19876/mcp/oauth/callback"
+        }
+      },
+      "boostd-production": {
+        "type": "remote",
+        "url": "https://www.boostd.app/api/mcp",
+        "oauth": {
+          "redirect_uri": "http://127.0.0.1:19876/mcp/oauth/callback",
+          "client_id": "7459ee17-7852-465a-9007-ee3874bf5e39"
+        }
+      }
+    }
+  }
+}

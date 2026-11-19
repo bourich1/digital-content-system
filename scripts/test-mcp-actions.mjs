@@ -19,9 +19,17 @@ async function exchange(c,write=false,target=resource){
  const response=await fetch(meta.authorization_endpoint+'?'+params,{redirect:'manual'});const authId=new URL(response.headers.get('location')).searchParams.get('authorization_id');assert.ok(authId);
  unwrap(await c.auth.oauth.getAuthorizationDetails(authId));
  if(write&&otherAccount)assert.ok((await otherAccount.rpc('approve_mcp_workspace_actions',{request_id:authId})).error);
- if(write)unwrap(await c.rpc('approve_mcp_workspace_actions',{request_id:authId}));
+ if(write){
+  unwrap(await c.rpc('approve_mcp_workspace_actions',{request_id:authId}));
+  assert.equal(unwrap(await c.rpc('mcp_connection_completed',{request_id:authId})),false);
+ }
  const approved=unwrap(await c.auth.oauth.approveAuthorization(authId,{skipBrowserRedirect:true}));const code=new URL(approved.redirect_url).searchParams.get('code');
- const tokens=await (await fetch(meta.token_endpoint,{method:'POST',body:new URLSearchParams({grant_type:'authorization_code',client_id,redirect_uri:redirect,code,code_verifier:verifier,resource:target})})).json();assert.ok(tokens.access_token);return {...tokens,client_id};
+ const tokens=await (await fetch(meta.token_endpoint,{method:'POST',body:new URLSearchParams({grant_type:'authorization_code',client_id,redirect_uri:redirect,code,code_verifier:verifier,resource:target})})).json();assert.ok(tokens.access_token);
+ if(write){
+  assert.equal(unwrap(await c.rpc('mcp_connection_completed',{request_id:authId})),true);
+  assert.equal(unwrap(await otherAccount.rpc('mcp_connection_completed',{request_id:authId})),false);
+ }
+ return {...tokens,client_id};
 }
 async function rpc(t,method,params){const response=await handleMcpHttp(new Request(resource,{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+t.access_token},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})}),{requireWorkspaceRole:true});assert.equal(response.status,200);return response.json();}
 async function call(t,name,args={}){const r=await rpc(t,'tools/call',{name,arguments:args});assert.ok(!r.error&&!r.result?.isError,JSON.stringify(r));return r.result.structuredContent;}

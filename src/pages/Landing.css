@@ -100,3 +100,20 @@ body:has(.landing-page) { zoom: 1; }
 
 .landing-page :is(button,input,select,textarea) { font-family:inherit; }
 
+/* Edge-to-edge hero; retain the original spacing between its contents. */
+.landing-page:has(> .public-navbar) main { padding-top:0; }
+.landing-page .landing-hero {
+  width:100%;
+  max-width:none;
+  margin-inline:0;
+  border:0;
+  border-radius:0;
+  min-height:calc(100svh - 84px);
+  align-content:center;
+}
+@media(max-width:800px) {
+  .landing-page .landing-hero { min-height:calc(100svh - 70px); }
+}
+@media(max-width:370px) {
+  .landing-page .landing-hero { min-height:calc(100svh - 116px); }
+}
