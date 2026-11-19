@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { workspaceRows } from '@/lib/workspaceData';
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
@@ -14,14 +14,8 @@ import { generateId, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { scriptSections, ideaStatuses as statuses } from '@/lib/ideaScript';
 
-const scriptSections = [
-  { key: 'script_hook', title: 'HOOK', description: 'Grab attention with a strong opening.', placeholder: 'What makes your viewer stop scrolling?', tone: 'hook' },
-  { key: 'script_body', title: 'BODY', description: 'Your main points, examples and explanations.', placeholder: '1. First point and explanation…\n\n2. Next point and example…', tone: 'body' },
-  { key: 'script_cta', title: 'CTA', description: 'Give your viewer a clear next step.', placeholder: 'Save this video, leave a comment or follow for more…', tone: 'cta' },
-] as const;
-
-const statuses: IdeaStatus[] = ['Idea', 'Script', 'Filmed', 'Edited', 'Ready', 'Posted'];
 const statusAccent: Record<IdeaStatus, string> = { Idea: '#fbbf24', Script: '#60a5fa', Filmed: '#fb923c', Edited: '#a78bfa', Ready: '#34d399', Posted: '#22d3ee' };
 const statusIcons = { Idea: Lightbulb, Script: FileText, Filmed: Clapperboard, Edited: Scissors, Ready: CircleCheck, Posted: Send };
 function StatusIcon({ status, className = 'w-3.5 h-3.5 shrink-0' }: { status: IdeaStatus; className?: string }) {
@@ -41,6 +35,7 @@ const getFaviconUrl = (url?: string) => {
 
 export default function ContentIdeas() {
   const { user, isDemoMode } = useAuth();
+  const navigate = useNavigate();
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,7 +125,6 @@ export default function ContentIdeas() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<IdeaStatus | 'All'>('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editorTab, setEditorTab] = useState<'details' | 'script'>('details');
   const [editingIdea, setEditingIdea] = useState<ContentIdea | null>(null);
 
   // View State
@@ -148,8 +142,7 @@ export default function ContentIdeas() {
     notes: ''
   });
 
-  const handleOpenModal = (idea?: ContentIdea, tab: 'details' | 'script' = 'details') => {
-    setEditorTab(tab);
+  const handleOpenModal = (idea?: ContentIdea) => {
     if (idea) {
       setEditingIdea(idea);
       setFormData(idea);
@@ -158,6 +151,13 @@ export default function ContentIdeas() {
       setFormData({ title: '', status: 'Idea', source_url: '', notes: '' });
     }
     setIsModalOpen(true);
+  };
+
+  const preventEnterSubmit = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.key !== 'Enter' || event.shiftKey) return;
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'TEXTAREA' || target.tagName === 'BUTTON') return;
+    event.preventDefault();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -404,7 +404,7 @@ export default function ContentIdeas() {
                         "flex items-center gap-1 flex-wrap",
                         viewMode === 'grid' ? "w-full justify-end border-t border-white/5 pt-3 mt-auto" : ""
                       )}>
-                        <Button variant="ghost" onClick={(e) => { e.stopPropagation(); handleOpenModal(idea, 'script'); }}><FileText className="w-4 h-4 mr-2" />Script</Button>
+                        <Button variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`/ideas/${idea.id}`); }}><FileText className="w-4 h-4 mr-2" />Script</Button>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -469,7 +469,7 @@ export default function ContentIdeas() {
                     </div>
                   </div>
 
-                  <Button onClick={() => { handleOpenModal(viewingIdea, 'script'); setViewingIdea(null); }}><FileText className="w-4 h-4 mr-2" />Edit Script</Button>
+                  <Button onClick={() => navigate(`/ideas/${viewingIdea.id}`)}><FileText className="w-4 h-4 mr-2" />Edit Script</Button>
                   {scriptSections.map(section => viewingIdea[section.key] ? (
                     <section key={section.key} className={`idea-script-section idea-script-${section.tone}`}>
                       <span className="idea-script-watermark" aria-hidden="true">{section.title}</span>
@@ -559,18 +559,13 @@ export default function ContentIdeas() {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="flex gap-2" aria-label="Idea editor sections">
-                      <Button type="button" variant={editorTab === 'details' ? 'primary' : 'ghost'} aria-pressed={editorTab === 'details'} onClick={() => setEditorTab('details')}>Details</Button>
-                      <Button type="button" variant={editorTab === 'script' ? 'primary' : 'ghost'} aria-pressed={editorTab === 'script'} onClick={() => setEditorTab('script')}><FileText className="w-4 h-4 mr-2" />Script</Button>
-                    </div>
+                  <form onSubmit={handleSubmit} onKeyDown={preventEnterSubmit} className="space-y-4">
                     <Input 
                       label="Title" 
                       value={formData.title} 
                       onChange={e => setFormData({...formData, title: e.target.value})}
                       required 
                     />
-                    <div hidden={editorTab !== 'details'} className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-zinc-400">Status</label>
                       <div className="grid grid-cols-3 gap-2">
@@ -603,30 +598,19 @@ export default function ContentIdeas() {
                       onChange={e => setFormData({...formData, notes: e.target.value})}
                       className="min-h-[150px]"
                     />
-                    </div>
-                    {editorTab === 'script' && (
-                      <div className="idea-script space-y-4">
-                        <p className="text-sm text-zinc-400">Shape your idea into a script. Each section is saved with this idea.</p>
-                        {scriptSections.map(section => (
-                          <section key={section.key} className={`idea-script-section idea-script-${section.tone}`}>
-                            <span className="idea-script-watermark" aria-hidden="true">{section.title}</span>
-                            <div className="idea-script-head">
-                              <label htmlFor={section.key} className="idea-script-label">{section.title}</label>
-                              <p className="idea-script-hint">{section.description}</p>
-                            </div>
-                            <div className="idea-script-ruled">
-                              <Textarea id={section.key} dir="auto" value={formData[section.key] || ''} placeholder={section.placeholder}
-                                disabled={isSubmitting} rows={section.key === 'script_body' ? 5 : 3}
-                                onChange={e => setFormData(previous => ({ ...previous, [section.key]: e.target.value }))} />
-                            </div>
-                          </section>
-                        ))}
-                        <Button type="button" variant="ghost" onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(scriptSections.map(section => `${section.title}\n${formData[section.key] || ''}`).join('\n\n'));
-                            toast.success('Script copied');
-                          } catch { toast.error('Could not copy the script'); }
-                        }}>Copy script</Button>
+                    {editingIdea && (
+                      <div className="flex items-center justify-between gap-4 flex-wrap rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                        <div>
+                          <p className="text-sm font-medium text-white">Script</p>
+                          <p className="text-xs text-zinc-500 mt-1">Write your Hook, Body and CTA on the full script page.</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => { setIsModalOpen(false); navigate(`/ideas/${editingIdea.id}`); }}
+                        >
+                          <FileText className="w-4 h-4 mr-2" /> Open script page
+                        </Button>
                       </div>
                     )}
                     <div className="flex justify-end gap-3 pt-4">

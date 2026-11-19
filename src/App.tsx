@@ -13,6 +13,7 @@ const Mcp = lazy(() => import('@/pages/Mcp'));
 const Landing = lazy(() => import('@/pages/Landing'));
 const Creators = lazy(() => import('@/pages/Creators'));
 const ContentIdeas = lazy(() => import('@/pages/ContentIdeas'));
+const IdeaScript = lazy(() => import('@/pages/IdeaScript'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const AccountSettings = lazy(() => import('@/pages/AccountSettings'));
 const SecuritySettings = lazy(() => import('@/pages/SecuritySettings'));
@@ -212,6 +213,14 @@ function AppRoutes() {
         <ProtectedRoute>
           <FeatureGuard feature="ideas">
             <ContentIdeas />
+          </FeatureGuard>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/ideas/:id" element={
+        <ProtectedRoute>
+          <FeatureGuard feature="ideas">
+            <IdeaScript />
           </FeatureGuard>
         </ProtectedRoute>
       } />

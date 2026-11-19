@@ -9,6 +9,8 @@
   isolation: isolate;
   overflow: hidden;
   container-type: inline-size;
+  --script-line: 2.5rem;
+  --script-min-height: 7.5rem;
   padding: 20px 24px 24px;
   border: 1px solid var(--script-edge);
   border-radius: 20px;
@@ -109,9 +111,9 @@
   background-image: repeating-linear-gradient(
     to bottom,
     transparent 0,
-    transparent calc(2.5rem - 1px),
-    var(--script-rule) calc(2.5rem - 1px),
-    var(--script-rule) 2.5rem
+    transparent calc(var(--script-line) - 1px),
+    var(--script-rule) calc(var(--script-line) - 1px),
+    var(--script-rule) var(--script-line)
   );
   background-repeat: repeat;
   background-origin: content-box;
@@ -120,7 +122,7 @@
   outline: none;
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 2.5rem;
+  line-height: var(--script-line);
   color: var(--script-ink);
   caret-color: var(--script-accent);
   white-space: pre-wrap;
@@ -129,7 +131,7 @@
 .idea-script-ruled textarea {
   resize: none;
   field-sizing: content;
-  min-height: 7.5rem;
+  min-height: var(--script-min-height);
   overflow-y: auto;
   scrollbar-width: thin;
 }
