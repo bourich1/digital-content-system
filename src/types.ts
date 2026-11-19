@@ -13,6 +13,9 @@ export interface Creator {
 export type IdeaStatus = 'Idea' | 'Script' | 'Filmed' | 'Edited' | 'Ready' | 'Posted';
 
 export interface ContentIdea {
+  script_hook?: string;
+  script_body?: string;
+  script_cta?: string;
   id: string;
   title: string;
   status: IdeaStatus;

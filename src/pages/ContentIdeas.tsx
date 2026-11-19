@@ -15,6 +15,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
+const scriptSections = [
+  { key: 'script_hook', title: 'HOOK', description: 'Grab attention with a strong opening.', placeholder: 'What makes your viewer stop scrolling?', tone: 'hook' },
+  { key: 'script_body', title: 'BODY', description: 'Your main points, examples and explanations.', placeholder: '1. First point and explanation…\n\n2. Next point and example…', tone: 'body' },
+  { key: 'script_cta', title: 'CTA', description: 'Give your viewer a clear next step.', placeholder: 'Save this video, leave a comment or follow for more…', tone: 'cta' },
+] as const;
+
 const statuses: IdeaStatus[] = ['Idea', 'Script', 'Filmed', 'Edited', 'Ready', 'Posted'];
 const statusAccent: Record<IdeaStatus, string> = { Idea: '#fbbf24', Script: '#60a5fa', Filmed: '#fb923c', Edited: '#a78bfa', Ready: '#34d399', Posted: '#22d3ee' };
 const statusIcons = { Idea: Lightbulb, Script: FileText, Filmed: Clapperboard, Edited: Scissors, Ready: CircleCheck, Posted: Send };
@@ -75,6 +81,9 @@ export default function ContentIdeas() {
         status: idea.status,
         source_url: idea.source_url,
         notes: idea.notes,
+        script_hook: idea.script_hook || '',
+        script_body: idea.script_body || '',
+        script_cta: idea.script_cta || '',
         created_at: idea.created_at || new Date().toISOString()
       }));
 
@@ -121,6 +130,7 @@ export default function ContentIdeas() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<IdeaStatus | 'All'>('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editorTab, setEditorTab] = useState<'details' | 'script'>('details');
   const [editingIdea, setEditingIdea] = useState<ContentIdea | null>(null);
 
   // View State
@@ -138,7 +148,8 @@ export default function ContentIdeas() {
     notes: ''
   });
 
-  const handleOpenModal = (idea?: ContentIdea) => {
+  const handleOpenModal = (idea?: ContentIdea, tab: 'details' | 'script' = 'details') => {
+    setEditorTab(tab);
     if (idea) {
       setEditingIdea(idea);
       setFormData(idea);
@@ -182,7 +193,10 @@ export default function ContentIdeas() {
             title: formData.title,
             status: formData.status,
             source_url: formData.source_url,
-            notes: formData.notes
+            notes: formData.notes,
+            script_hook: formData.script_hook || '',
+            script_body: formData.script_body || '',
+            script_cta: formData.script_cta || ''
           })
           .eq('id', editingIdea.id);
 
@@ -196,7 +210,10 @@ export default function ContentIdeas() {
             title: formData.title,
             status: formData.status,
             source_url: formData.source_url,
-            notes: formData.notes
+            notes: formData.notes,
+            script_hook: formData.script_hook || '',
+            script_body: formData.script_body || '',
+            script_cta: formData.script_cta || ''
           }]);
 
         if (error) throw error;
@@ -384,9 +401,10 @@ export default function ContentIdeas() {
                         )}
                       </div>
                       <div className={cn(
-                        "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
+                        "flex items-center gap-1 flex-wrap",
                         viewMode === 'grid' ? "w-full justify-end border-t border-white/5 pt-3 mt-auto" : ""
                       )}>
+                        <Button variant="ghost" onClick={(e) => { e.stopPropagation(); handleOpenModal(idea, 'script'); }}><FileText className="w-4 h-4 mr-2" />Script</Button>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -429,7 +447,7 @@ export default function ContentIdeas() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md"
+              className="w-full max-w-md max-h-[90dvh] overflow-y-auto"
             >
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -451,6 +469,18 @@ export default function ContentIdeas() {
                     </div>
                   </div>
 
+                  <Button onClick={() => { handleOpenModal(viewingIdea, 'script'); setViewingIdea(null); }}><FileText className="w-4 h-4 mr-2" />Edit Script</Button>
+                  {scriptSections.map(section => viewingIdea[section.key] ? (
+                    <section key={section.key} className={`idea-script-section idea-script-${section.tone}`}>
+                      <span className="idea-script-watermark" aria-hidden="true">{section.title}</span>
+                      <div className="idea-script-head">
+                        <h4 className="idea-script-label">{section.title}</h4>
+                      </div>
+                      <div className="idea-script-ruled">
+                        <p dir="auto" className="idea-script-text whitespace-pre-wrap break-words">{viewingIdea[section.key]}</p>
+                      </div>
+                    </section>
+                  ) : null)}
                   {viewingIdea.source_url && (
                     <div className="pt-4 border-t border-white/5">
                       <a 
@@ -519,23 +549,28 @@ export default function ContentIdeas() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="w-full max-w-lg"
+              className="w-full max-w-2xl max-h-[90dvh] overflow-y-auto"
             >
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>{editingIdea ? 'Edit Idea' : 'New Idea'}</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)}>
+                  <Button variant="ghost" size="icon" disabled={isSubmitting} onClick={() => setIsModalOpen(false)}>
                     <X className="w-4 h-4" />
                   </Button>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="flex gap-2" aria-label="Idea editor sections">
+                      <Button type="button" variant={editorTab === 'details' ? 'primary' : 'ghost'} aria-pressed={editorTab === 'details'} onClick={() => setEditorTab('details')}>Details</Button>
+                      <Button type="button" variant={editorTab === 'script' ? 'primary' : 'ghost'} aria-pressed={editorTab === 'script'} onClick={() => setEditorTab('script')}><FileText className="w-4 h-4 mr-2" />Script</Button>
+                    </div>
                     <Input 
                       label="Title" 
                       value={formData.title} 
                       onChange={e => setFormData({...formData, title: e.target.value})}
                       required 
                     />
+                    <div hidden={editorTab !== 'details'} className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-zinc-400">Status</label>
                       <div className="grid grid-cols-3 gap-2">
@@ -563,13 +598,39 @@ export default function ContentIdeas() {
                       placeholder="https://..."
                     />
                     <Textarea 
-                      label="Notes / Script" 
+                      label="Notes"
                       value={formData.notes} 
                       onChange={e => setFormData({...formData, notes: e.target.value})}
                       className="min-h-[150px]"
                     />
+                    </div>
+                    {editorTab === 'script' && (
+                      <div className="idea-script space-y-4">
+                        <p className="text-sm text-zinc-400">Shape your idea into a script. Each section is saved with this idea.</p>
+                        {scriptSections.map(section => (
+                          <section key={section.key} className={`idea-script-section idea-script-${section.tone}`}>
+                            <span className="idea-script-watermark" aria-hidden="true">{section.title}</span>
+                            <div className="idea-script-head">
+                              <label htmlFor={section.key} className="idea-script-label">{section.title}</label>
+                              <p className="idea-script-hint">{section.description}</p>
+                            </div>
+                            <div className="idea-script-ruled">
+                              <Textarea id={section.key} dir="auto" value={formData[section.key] || ''} placeholder={section.placeholder}
+                                disabled={isSubmitting} rows={section.key === 'script_body' ? 5 : 3}
+                                onChange={e => setFormData(previous => ({ ...previous, [section.key]: e.target.value }))} />
+                            </div>
+                          </section>
+                        ))}
+                        <Button type="button" variant="ghost" onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(scriptSections.map(section => `${section.title}\n${formData[section.key] || ''}`).join('\n\n'));
+                            toast.success('Script copied');
+                          } catch { toast.error('Could not copy the script'); }
+                        }}>Copy script</Button>
+                      </div>
+                    )}
                     <div className="flex justify-end gap-3 pt-4">
-                      <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                      <Button type="button" variant="ghost" disabled={isSubmitting} onClick={() => setIsModalOpen(false)}>Cancel</Button>
                       <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? (
                           <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>

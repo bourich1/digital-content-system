@@ -2,3 +2,159 @@
 .idea-status-card:hover,.idea-status-card:focus-within { border-color: color-mix(in srgb,var(--idea-accent) 30%,transparent); border-left-color: var(--idea-accent); background-color: color-mix(in srgb,var(--idea-accent) 7%,#101012); box-shadow: 0 0 22px color-mix(in srgb,var(--idea-accent) 7%,transparent); }
 .idea-status-card:hover .idea-status-title,.idea-status-card:focus-within .idea-status-title { color: var(--idea-accent); }
 @media(prefers-reduced-motion:reduce) { .idea-status-card,.idea-status-title { transition: none; } }
+
+/* Script paper blocks: BOOSTD palette, Inter, English */
+.idea-script-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  container-type: inline-size;
+  padding: 20px 24px 24px;
+  border: 1px solid var(--script-edge);
+  border-radius: 20px;
+  background: var(--script-bg);
+  color: var(--script-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 22px 44px -32px rgba(0, 0, 0, .9);
+  transition: box-shadow 220ms ease, transform 220ms ease;
+}
+.idea-script-section:focus-within {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65), 0 26px 52px -30px rgba(0, 0, 0, .95);
+}
+
+.idea-script-hook {
+  --script-accent: #b44a15;
+  --script-ink: #2d1b10;
+  --script-bg: linear-gradient(155deg, #fdf3ea 0%, #fbe5d4 100%);
+  --script-edge: rgba(176, 74, 21, .22);
+  --script-rule: rgba(176, 74, 21, .26);
+  --script-watermark: rgba(255, 255, 255, .62);
+}
+.idea-script-body {
+  --script-accent: #2b2c31;
+  --script-ink: #282725;
+  --script-bg: linear-gradient(155deg, #f6f4ef 0%, #eae6dc 100%);
+  --script-edge: rgba(43, 44, 49, .16);
+  --script-rule: rgba(43, 44, 49, .18);
+  --script-watermark: rgba(255, 255, 255, .7);
+}
+.idea-script-cta {
+  --script-accent: #3a1a06;
+  --script-ink: #2b1507;
+  --script-bg: linear-gradient(155deg, #f9964f 0%, #f07832 58%, #e56a24 100%);
+  --script-edge: rgba(255, 255, 255, .3);
+  --script-rule: rgba(43, 21, 7, .26);
+  --script-watermark: rgba(255, 255, 255, .24);
+}
+
+.idea-script-watermark {
+  position: absolute;
+  z-index: 0;
+  right: -10px;
+  bottom: -30px;
+  font-family: var(--font-sans);
+  font-size: clamp(58px, 24cqw, 150px);
+  font-weight: 800;
+  line-height: .8;
+  letter-spacing: -.045em;
+  color: var(--script-watermark);
+  pointer-events: none;
+  user-select: none;
+}
+
+.idea-script-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.idea-script-label {
+  display: block;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--script-accent);
+}
+.idea-script-hint {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: right;
+  color: var(--script-ink);
+  opacity: .5;
+}
+.idea-script-cta .idea-script-hint { opacity: .62; }
+
+.idea-script-ruled {
+  position: relative;
+  z-index: 1;
+}
+.idea-script-ruled .idea-script-text,
+.idea-script-ruled textarea {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(2.5rem - 1px),
+    var(--script-rule) calc(2.5rem - 1px),
+    var(--script-rule) 2.5rem
+  );
+  background-repeat: repeat;
+  background-origin: content-box;
+  background-clip: content-box;
+  box-shadow: none;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 2.5rem;
+  color: var(--script-ink);
+  caret-color: var(--script-accent);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.idea-script-ruled textarea {
+  resize: none;
+  field-sizing: content;
+  min-height: 7.5rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.idea-script-ruled .idea-script-text {
+  padding-bottom: 1px;
+}
+.idea-script-ruled textarea::placeholder {
+  color: var(--script-ink);
+  opacity: .4;
+}
+.idea-script-ruled textarea:focus,
+.idea-script-ruled textarea:focus-visible {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+.idea-script-ruled textarea:disabled {
+  opacity: .6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idea-script-section { transition: none; }
+  .idea-script-section:focus-within { transform: none; }
+}
+@media (max-width: 640px) {
+  .idea-script-section { padding: 18px 18px 20px; border-radius: 16px; }
+  .idea-script-hint { display: none; }
+}

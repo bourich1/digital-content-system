@@ -80,6 +80,12 @@ create table if not exists public.content_ideas (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Structured scripts share the idea's existing ownership and RLS policies.
+alter table public.content_ideas
+  add column if not exists script_hook text not null default '',
+  add column if not exists script_body text not null default '',
+  add column if not exists script_cta text not null default '';
+
 -- ── Analytics ────────────────────────────────────────────────────────────────
 create table if not exists public.analytics (
   id uuid default uuid_generate_v4() primary key,
